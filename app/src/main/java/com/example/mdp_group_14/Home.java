@@ -44,8 +44,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Home extends Fragment {
-
-    final Handler handler = new Handler();
     // Declaration Variables
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
@@ -60,7 +58,6 @@ public class Home extends Fragment {
     BluetoothDevice mBTDevice;
     private static UUID myUUID;
     ProgressDialog myDialog;
-    Bitmap bm, mapscalable;
     String obstacleID;
 
     private static final String TAG = "Main Activity";
@@ -171,7 +168,6 @@ public class Home extends Fragment {
                 }
         );
         PathTranslator pathTranslator = new PathTranslator(gridMap);
-//        pathTranslator.translatePath("MOVE,FORWARD,30");
         return root;
     }
 
@@ -241,27 +237,6 @@ public class Home extends Fragment {
         editor = sharedPreferences.edit();
 
     }
-
-
-//        if (BluetoothConnectionService.BluetoothConnectionStatus) {
-////            JSONObject jsonObj = message.getJSONObject("data");
-//        JSONObject js=new JSONObject();
-//        try {
-//            JSONArray ja=new JSONArray();
-//            js.put("key", "floor");
-//            ja.put(js);
-//            BluetoothConnectionService.write(ja);
-//
-//        }
-//        catch (JSONException e) {
-//            showLog("lol!");
-//
-//
-//            //BluetoothConnectionService.write({"key":"test","value":"hello"});
-//        }
-//        //showLog(message);
-//        showLog("Exiting printMessage");
-//    }
 
     // Purely to display a message on the chat box - NOT SENT via BT
     public static void refreshMessageReceivedNS(String message){
@@ -430,13 +405,7 @@ public class Home extends Fragment {
 
 //                updateStatus(cmd[0]+" "+ cmd[1]+" "+cmd[2]);
             }
-            // OLD VER: Expects a syntax of e.g. Algo|f010. Commented out and implemented new version below
-/*            if(message.contains("Algo")) {
-                // translate the message after Algo|
-                if(trackRobot)
-                    pathTranslator.translatePath(message.split("\\|")[1]);
-//                pathTranslator.altTranslation(message.split("\\|")[1]);   // last min addition - untested
-            }*/
+
 
             //NEW VER: Expects a syntax of eg. MOVE,<DISTANCE IN CM>,<DIRECTION>.
             //NEW VER: Expects a syntax of eg. TURN,<DIRECTION>.

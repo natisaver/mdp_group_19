@@ -66,6 +66,7 @@ public class GridMap extends View {
     private static int[] curCoord = new int[]{-1, -1};
     private static int[] oldCoord = new int[]{-1, -1};
     private static ArrayList<int[]> obstacleCoord = new ArrayList<>();
+
     // controls whether or not the robot is to be re-drawn upon calling onDraw() after an invalidate()
     // SHOULD be 'true' upon selecting a start position using SET START POINT btn, and back to false if robot goes out of bounds
     public static boolean canDrawRobot = false;
@@ -77,28 +78,32 @@ public class GridMap extends View {
     private static final String TAG = "GridMap";
     private static final int COL = 20;
     private static final int ROW = 20;
+    // cell size is calculated by taking the canvas width / (cols+1)
+    // why cols+1? because although we want a 20x20 grid, we need a 21x21 grid
+    // so that we can store the grid labels, in the 1st col cells[0][?] and last row cells[?][20]
     private static float cellSize;
+    // cells is the 2d array of the cells, its initialised via createCell() in onDraw()
     private static Cell[][] cells;
     Map<String, String> val2IdxMap;
 
     private boolean mapDrawn = false;
-    private static final int CELL_LENGTH = 5; //length of each cell in cm
-    private static final int LEFT_TURNING_RADIUS = 40;
-    private static final int RIGHT_TURNING_RADIUS = 41;
-    private static final int BLEFT_TURNING_RADIUS = 37;
-    private static final int BRIGHT_TURNING_RADIUS = 41;
 
-    private static int X_OFFSET = 0;
-    private static int Y_OFFSET = 0;
+    //    Non-Static: Belongs to an instance of the class.
+        //    Each object created from the class will have its own ITEM_LIST.
+        //    Accessible via this.ITEM_LIST
 
-    public int movesRx = 0;
-    public int moves = 0;
+        //    each new String[20] creates an array of 20 string elements (this is the row)
+        //    Arrays.asList() takes in these rows to make a 2d grid, i.e. a List<String[]>
+        //    new ArrayList<>(Arrays.asList(...)) makes the list dynamic, you can add, remove, or modify rows (String[])
     public ArrayList<String[]> ITEM_LIST = new ArrayList<>(Arrays.asList(
             new String[20], new String[20], new String[20], new String[20], new String[20],
             new String[20], new String[20], new String[20], new String[20], new String[20],
             new String[20], new String[20], new String[20], new String[20], new String[20],
             new String[20], new String[20], new String[20], new String[20], new String[20]
     ));
+
+    //    Static: Belongs to the class itself, shared across all instances.
+        //    There is only one shared copy of this list for all instances of the class.
     public static ArrayList<String[]> imageBearings = new ArrayList<>(Arrays.asList(
             new String[20], new String[20], new String[20], new String[20], new String[20],
             new String[20], new String[20], new String[20], new String[20], new String[20],
@@ -109,7 +114,6 @@ public class GridMap extends View {
     static ClipData clipData;
     static Object localState;
     int initialColumn, initialRow;
-    public Canvas canvas;
 
     public GridMap(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -155,14 +159,18 @@ public class GridMap extends View {
         // Create cell coords
         Log.d(TAG, "Creating Cell");
 
+        // mapDrawn boolean ensures we only run the cell creation once
+        // calls createCell()
         if (!mapDrawn) {
             mapDrawn = true;
             this.createCell();
         }
 
+        // Calls methods to draw individual cells, grid lines, axis numbers, obstacles, and the robot if needed.
         drawIndividualCell(canvas);
         drawHorizontalLines(canvas);
         drawVerticalLines(canvas);
+        // adds axis numbers (0 to 19)
         drawGridNumber(canvas);
         if (getCanDrawRobot())
             drawRobot(canvas, curCoord);
@@ -269,6 +277,8 @@ public class GridMap extends View {
         showLog("Exiting drawIndividualCell");
     }
 
+    // cellSize / 30 value is a small offset to just slightly move the line above the actual boundary to visually see it
+    // drawLine takes in coordinates of 2 points to draw a line b/w them, start=(x1,y1) and end=(x2,y2)
     private void drawHorizontalLines(Canvas canvas) {
         for (int y = 0; y <= ROW; y++)
             canvas.drawLine(
@@ -292,8 +302,11 @@ public class GridMap extends View {
     }
 
     // Draw the axis numbers
+    // the > 10 condition is to adjust offset for the double digit numbers, shifting it abit more to left for double digits
     private void drawGridNumber(Canvas canvas) {
         showLog("Entering drawGridNumber");
+        // this 1st part writes the numbers from 0 to 19 @ y=20
+        // i.e. numbers will be on the 21st row of the 2d grid
         for (int x = 1; x <= COL; x++) {
             if (x > 10)
                 canvas.drawText(
@@ -310,6 +323,8 @@ public class GridMap extends View {
                         blackPaint
                 );
         }
+        // this 2nd part writes the numbers from 0 to 19 @ x=0
+        // i.e. numbers will be on the 1st column of the 2d grid
         for (int y = 0; y < ROW; y++) {
             if ((20 - y) > 10)
                 canvas.drawText(
@@ -327,10 +342,6 @@ public class GridMap extends View {
                 );
         }
         showLog("Exiting drawGridNumber");
-    }
-
-    public ArrayList<int[]> getObstaclesList() {
-        return obstacleCoord;
     }
 
     private void drawRobot(Canvas canvas, int[] curCoord) {
@@ -455,14 +466,22 @@ public class GridMap extends View {
         return canDrawRobot;
     }
 
+    // this func initialises the 2d cells array
+    // its called before any other func like adding axis numbers or obstacles.
     private void createCell() {
         showLog("Entering cellCreate");
+        // rows+1, cols+1 so that we have space to put the grid labels, e.g. 20x20 will be 21x21
         cells = new Cell[COL + 1][ROW + 1];
         this.calculateDimension();
         cellSize = this.getCellSize();
 
+        // the other functions will just overlap the 2d array later, so just iterate every cell first
         for (int x = 0; x <= COL; x++)
             for (int y = 0; y <= ROW; y++)
+                // for every cell in the 2d array cells, create Cell obj
+                // Cell() takes in 2 points, a top left, and bottom right
+                // (cellSize / 30) moves every cell slightly to the right and slightly down, to give space for boundary line
+                // imagine every cell as a blue box with a white line (thickness cellsize/30) on the left and top of the box
                 cells[x][y] = new Cell(
                         x * cellSize + (cellSize / 30),
                         y * cellSize + (cellSize / 30),
@@ -634,11 +653,6 @@ public class GridMap extends View {
         return obstacleCoord;
     }
 
-   /* private ArrayList<int[]> getObstacleCoord2() {
-        return obstacleCoord2;
-    }
-
-    */
 
     private static void showLog(String message) {
         Log.d(TAG, message);
