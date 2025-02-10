@@ -161,6 +161,7 @@ public class GridMap extends View {
 
         // mapDrawn boolean ensures we only run the cell creation once
         // calls createCell()
+        // which creates the 2d array called "cells"
         if (!mapDrawn) {
             mapDrawn = true;
             this.createCell();
@@ -179,93 +180,41 @@ public class GridMap extends View {
         showLog("Exiting onDraw");
     }
 
-    // draws obstacle cells whenever map refreshes
-    private void drawObstacles(Canvas canvas) {
-        showLog("Entering drawObstacles");
-        for (int i = 0; i < obstacleCoord.size(); i++) { // for each recorded obstacle
-            // get col and row (zero-indexed)
-            int col = obstacleCoord.get(i)[0];
-            int row = obstacleCoord.get(i)[1];
-            // cells[col + 1][19 - row] is an unexplored obstacle (image not yet identified)
-            if (ITEM_LIST.get(row)[col] == null || ITEM_LIST.get(row)[col].equals("")
-                    || ITEM_LIST.get(row)[col].equals("Nil")) {
-                showLog("drawObstacles: drawing obstacle ID");
-                whitePaint.setTextSize(15);
-                canvas.drawText(
-                        String.valueOf(i + 1),
-                        cells[col + 1][19 - row].startX + ((cells[1][1].endX - cells[1][1].startX) / 2),
-                        cells[col + 1][19 - row].startY + ((cells[1][1].endY - cells[1][1].startY) / 2) + 5,
-                        whitePaint
-                );
-            } else {    // cells[col + 1][19 - row] is an explored obstacle (image has been identified)
-                showLog("drawObstacles: drawing image ID");
-                whitePaint.setTextSize(17);
-                canvas.drawText(
-                        ITEM_LIST.get(row)[col],
-                        cells[col + 1][19 - row].startX + ((cells[1][1].endX - cells[1][1].startX) / 2),
-                        cells[col + 1][19 - row].startY + ((cells[1][1].endY - cells[1][1].startY) / 2) + 10,
-                        whitePaint
-                );
-            }
+    // this func initialises the 2d cells array
+    // its called before any other func like adding axis numbers or obstacles.
+    private void createCell() {
+        showLog("Entering cellCreate");
+        // rows+1, cols+1 so that we have space to put the grid labels, e.g. 20x20 will be 21x21
+        cells = new Cell[COL + 1][ROW + 1];
+        this.calculateDimension();
+        cellSize = this.getCellSize();
 
-            // color the face direction
-            // imageBearings.get(row)[col], row and col are just zero-indexed based on the displayed grid (range is 0 - 19)
-            switch (imageBearings.get(row)[col]) {
-                case "North":
-                    canvas.drawLine(
-                            cells[col + 1][19 - row].startX,
-                            cells[col + 1][19 - row].startY,
-                            cells[col + 1][19 - row].endX,
-                            cells[col + 1][19 - row].startY,
-                            maroonPaint
-                    );
-                    break;
-                case "South":
-                    canvas.drawLine(
-                            cells[col + 1][19 - row].startX,
-                            cells[col + 1][19 - row].startY + cellSize,
-                            cells[col + 1][19 - row].endX,
-                            cells[col + 1][19 - row].startY + cellSize,
-                            maroonPaint
-                    );
-                    break;
-                case "East":
-                    canvas.drawLine(
-                            cells[col + 1][19 - row].startX + cellSize,
-                            cells[col + 1][19 - row].startY,
-                            cells[col + 1][19 - row].startX + cellSize,
-                            cells[col + 1][19 - row].endY,
-                            maroonPaint
-                    );
-                    break;
-                case "West":
-                    canvas.drawLine(
-                            cells[col + 1][19 - row].startX,
-                            cells[col + 1][19 - row].startY,
-                            cells[col + 1][19 - row].startX,
-                            cells[col + 1][19 - row].endY,
-                            maroonPaint
-                    );
-                    break;
-            }
-        }
-        showLog("Exiting drawObstacles");
+        // the other functions will just overlap the 2d array later, so just iterate every cell first
+        for (int x = 0; x <= COL; x++)
+            for (int y = 0; y <= ROW; y++)
+                // for every cell in the 2d array cells, create Cell obj
+                // Cell() takes in 2 points, a top left, and bottom right
+                // (cellSize / 30) offsets every cell slightly to the right and slightly down, to give space for boundary line
+                // imagine every cell as a blue box with a white outline (thickness cellsize/30) only on the left and top of the box, this essentially outlines all the grids when combined tgt
+                cells[x][y] = new Cell(
+                        x * cellSize + (cellSize / 30),
+                        y * cellSize + (cellSize / 30),
+                        (x + 1) * cellSize,
+                        (y + 1) * cellSize,
+                        unexploredColor,
+                        "unexplored"
+                );
+        showLog("Exiting createCell");
     }
 
+   // iterate all cols except 1st col (x=0)
+    // iterate all rows except last row (y=20)
+    // to now draw out the cells in blue
     private void drawIndividualCell(Canvas canvas) {
         showLog("Entering drawIndividualCell");
         for (int x = 1; x <= COL; x++)
             for (int y = 0; y < ROW; y++)
-                // if cell[x][y] is a non-image cell
-                if (!cells[x][y].type.equals("image") && cells[x][y].getId() == -1) {
-                    canvas.drawRect(
-                            cells[x][y].startX,
-                            cells[x][y].startY,
-                            cells[x][y].endX,
-                            cells[x][y].endY,
-                            cells[x][y].paint
-                    );
-                } else {
+                {
                     canvas.drawRect(
                             cells[x][y].startX,
                             cells[x][y].startY,
@@ -277,29 +226,55 @@ public class GridMap extends View {
         showLog("Exiting drawIndividualCell");
     }
 
-    // cellSize / 30 value is a small offset to just slightly move the line above the actual boundary to visually see it
+    // recall for each cell, we made it offset to the right and down by + cellSize / 30 to make space for the boundary line, so the top and left essentially has space
+    // x,y are the indices, which range from 0 to 20, to access all 21 cells in the 2d grid "cells"
+    // so now we can draw the lines:
     // drawLine takes in coordinates of 2 points to draw a line b/w them, start=(x1,y1) and end=(x2,y2)
+    // recall topleft = (startX, startY) and bottomright = (endX, endY)
+    // here we draw a horizontal line, on y-coordinate of the topleft, while x-coordinate ranges from 2nd cell to 21st cell, i.e. cells[1][?].startX to cells[20][y].endX
     private void drawHorizontalLines(Canvas canvas) {
         for (int y = 0; y <= ROW; y++)
             canvas.drawLine(
                     cells[1][y].startX,
-                    cells[1][y].startY - (cellSize / 30),
+                    cells[1][y].startY,
                     cells[20][y].endX,
-                    cells[20][y].startY - (cellSize / 30),
+                    cells[20][y].startY,
                     whitePaint
             );
     }
 
+    // draw the vertical lines for each left side of every grid except 1st column (since we + cellSize)
     private void drawVerticalLines(Canvas canvas) {
         for (int x = 0; x <= COL; x++)
             canvas.drawLine(
-                    cells[x][0].startX - (cellSize / 30) + cellSize,
-                    cells[x][0].startY - (cellSize / 30),
-                    cells[x][0].startX - (cellSize / 30) + cellSize,
-                    cells[x][19].endY + (cellSize / 30),
+                    cells[x][0].startX + cellSize,
+                    cells[x][0].startY ,
+                    cells[x][0].startX + cellSize,
+                    cells[x][19].endY,
                     whitePaint
             );
     }
+//    private void drawHorizontalLines(Canvas canvas) {
+//        for (int y = 0; y <= ROW; y++)
+//            canvas.drawLine(
+//                    cells[1][y].startX,
+//                    cells[1][y].startY - (cellSize / 30),
+//                    cells[20][y].endX,
+//                    cells[20][y].startY - (cellSize / 30),
+//                    whitePaint
+//            );
+//    }
+//
+//    private void drawVerticalLines(Canvas canvas) {
+//        for (int x = 0; x <= COL; x++)
+//            canvas.drawLine(
+//                    cells[x][0].startX - (cellSize / 30) + cellSize,
+//                    cells[x][0].startY - (cellSize / 30),
+//                    cells[x][0].startX - (cellSize / 30) + cellSize,
+//                    cells[x][19].endY + (cellSize / 30),
+//                    whitePaint
+//            );
+//    }
 
     // Draw the axis numbers
     // the > 10 condition is to adjust offset for the double digit numbers, shifting it abit more to left for double digits
@@ -434,6 +409,79 @@ public class GridMap extends View {
         showLog("Exiting drawRobot");
     }
 
+    // draws obstacle cells whenever map refreshes
+    private void drawObstacles(Canvas canvas) {
+        showLog("Entering drawObstacles");
+        for (int i = 0; i < obstacleCoord.size(); i++) { // for each recorded obstacle
+            // get col and row (zero-indexed)
+            int col = obstacleCoord.get(i)[0];
+            int row = obstacleCoord.get(i)[1];
+            // cells[col + 1][19 - row] is an unexplored obstacle (image not yet identified)
+            if (ITEM_LIST.get(row)[col] == null || ITEM_LIST.get(row)[col].equals("")
+                    || ITEM_LIST.get(row)[col].equals("Nil")) {
+                showLog("drawObstacles: drawing obstacle ID");
+                whitePaint.setTextSize(15);
+                canvas.drawText(
+                        String.valueOf(i + 1),
+                        cells[col + 1][19 - row].startX + ((cells[1][1].endX - cells[1][1].startX) / 2),
+                        cells[col + 1][19 - row].startY + ((cells[1][1].endY - cells[1][1].startY) / 2) + 5,
+                        whitePaint
+                );
+            } else {    // cells[col + 1][19 - row] is an explored obstacle (image has been identified)
+                showLog("drawObstacles: drawing image ID");
+                whitePaint.setTextSize(17);
+                canvas.drawText(
+                        ITEM_LIST.get(row)[col],
+                        cells[col + 1][19 - row].startX + ((cells[1][1].endX - cells[1][1].startX) / 2),
+                        cells[col + 1][19 - row].startY + ((cells[1][1].endY - cells[1][1].startY) / 2) + 10,
+                        whitePaint
+                );
+            }
+
+            // color the face direction
+            // imageBearings.get(row)[col], row and col are just zero-indexed based on the displayed grid (range is 0 - 19)
+            switch (imageBearings.get(row)[col]) {
+                case "North":
+                    canvas.drawLine(
+                            cells[col + 1][19 - row].startX,
+                            cells[col + 1][19 - row].startY,
+                            cells[col + 1][19 - row].endX,
+                            cells[col + 1][19 - row].startY,
+                            maroonPaint
+                    );
+                    break;
+                case "South":
+                    canvas.drawLine(
+                            cells[col + 1][19 - row].startX,
+                            cells[col + 1][19 - row].startY + cellSize,
+                            cells[col + 1][19 - row].endX,
+                            cells[col + 1][19 - row].startY + cellSize,
+                            maroonPaint
+                    );
+                    break;
+                case "East":
+                    canvas.drawLine(
+                            cells[col + 1][19 - row].startX + cellSize,
+                            cells[col + 1][19 - row].startY,
+                            cells[col + 1][19 - row].startX + cellSize,
+                            cells[col + 1][19 - row].endY,
+                            maroonPaint
+                    );
+                    break;
+                case "West":
+                    canvas.drawLine(
+                            cells[col + 1][19 - row].startX,
+                            cells[col + 1][19 - row].startY,
+                            cells[col + 1][19 - row].startX,
+                            cells[col + 1][19 - row].endY,
+                            maroonPaint
+                    );
+                    break;
+            }
+        }
+        showLog("Exiting drawObstacles");
+    }
+
     public String getRobotDirection() {
         return robotDirection;
     }
@@ -466,32 +514,6 @@ public class GridMap extends View {
         return canDrawRobot;
     }
 
-    // this func initialises the 2d cells array
-    // its called before any other func like adding axis numbers or obstacles.
-    private void createCell() {
-        showLog("Entering cellCreate");
-        // rows+1, cols+1 so that we have space to put the grid labels, e.g. 20x20 will be 21x21
-        cells = new Cell[COL + 1][ROW + 1];
-        this.calculateDimension();
-        cellSize = this.getCellSize();
-
-        // the other functions will just overlap the 2d array later, so just iterate every cell first
-        for (int x = 0; x <= COL; x++)
-            for (int y = 0; y <= ROW; y++)
-                // for every cell in the 2d array cells, create Cell obj
-                // Cell() takes in 2 points, a top left, and bottom right
-                // (cellSize / 30) moves every cell slightly to the right and slightly down, to give space for boundary line
-                // imagine every cell as a blue box with a white line (thickness cellsize/30) on the left and top of the box
-                cells[x][y] = new Cell(
-                        x * cellSize + (cellSize / 30),
-                        y * cellSize + (cellSize / 30),
-                        (x + 1) * cellSize,
-                        (y + 1) * cellSize,
-                        unexploredColor,
-                        "unexplored"
-                );
-        showLog("Exiting createCell");
-    }
 
     // receives col and row values that are just +1 of the visual col and row value (x & y)
     public void setStartCoord(int col, int row) {
