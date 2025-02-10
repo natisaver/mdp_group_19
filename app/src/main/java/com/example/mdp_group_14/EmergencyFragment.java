@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -124,7 +123,7 @@ public class EmergencyFragment extends DialogFragment {
 
                 if (isObstacle)
                 {
-                    gridMap.imageBearings.get(row)[col] = dir;
+                    gridMap.displayedImageBearings.get(row)[col] = dir;
                     gridMap.setObstacleCoord(col+1, row+1);
                 }
 

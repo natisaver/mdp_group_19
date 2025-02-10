@@ -19,8 +19,6 @@ import android.widget.ToggleButton;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import java.util.Arrays;
-
 public class MappingFragment extends Fragment {
     private static final String TAG = "MapFragment";
 
@@ -64,7 +62,6 @@ public class MappingFragment extends Fragment {
             direction = savedInstanceState.getString("direction");
         gridMap = Home.getGridMap();
         final DirectionsFragment directionFragment = new DirectionsFragment();
-        final EmergencyFragment emergencyFragment = new EmergencyFragment();
 
         resetMapBtn = root.findViewById(R.id.resetBtn);
         setStartPointToggleBtn = root.findViewById(R.id.startpointToggleBtn);
@@ -266,7 +263,7 @@ public class MappingFragment extends Fragment {
                             default:
                                 direction = "";
                         }
-                        gridMap.imageBearings.get(Integer.parseInt(coords[1]))[Integer.parseInt(coords[0])] = direction;
+                        gridMap.displayedImageBearings.get(Integer.parseInt(coords[1]))[Integer.parseInt(coords[0])] = direction;
                         gridMap.setObstacleCoord(Integer.parseInt(coords[0]) + 1, Integer.parseInt(coords[1]) + 1);
                         try {
                             Thread.sleep(50);

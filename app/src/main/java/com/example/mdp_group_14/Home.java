@@ -1,7 +1,6 @@
 package com.example.mdp_group_14;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -16,7 +15,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -24,8 +22,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,13 +30,9 @@ import android.widget.Toast;
 import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.UUID;
 
 public class Home extends Fragment {
@@ -50,6 +42,8 @@ public class Home extends Fragment {
     private static Context context;
     public static Handler timerHandler = new Handler();
 
+    // static here means this gridMap is attached to the Home class, shared across instances
+    // basically 1 gridmap for home activity
     private static GridMap gridMap;
     static TextView xAxisTextView, yAxisTextView, directionAxisTextView;
     static TextView robotStatusTextView, bluetoothStatus, bluetoothDevice;
@@ -128,9 +122,11 @@ public class Home extends Fragment {
         bluetoothStatus = root.findViewById(R.id.bluetoothStatus);
         bluetoothDevice = root.findViewById(R.id.bluetoothConnectedDevice);
 
-        // Map
-        gridMap = new GridMap(getContext());
+        // Map, 21x21 grid
+        // in our home.xml, we defined the view with id=mapView to have a custom view class of type GridMap()
+        // so android will auto new GridMap() for us, and we just have to retrieve it as such:
         gridMap = root.findViewById(R.id.mapView);
+
         xAxisTextView = root.findViewById(R.id.xAxisTextView);
         yAxisTextView = root.findViewById(R.id.yAxisTextView);
         directionAxisTextView = root.findViewById(R.id.directionAxisTextView);
@@ -138,8 +134,8 @@ public class Home extends Fragment {
         // initialize ITEM_LIST and imageBearings strings
         for (int i = 0; i < 20; i++) {
             for (int j = 0; j < 20; j++) {
-                gridMap.ITEM_LIST.get(i)[j] = "";
-                GridMap.imageBearings.get(i)[j] = "";
+                gridMap.displayedImageIDs.get(i)[j] = "";
+                GridMap.displayedImageBearings.get(i)[j] = "";
             }
         }
 
