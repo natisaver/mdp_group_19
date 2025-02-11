@@ -133,7 +133,6 @@ public class EmergencyFragment extends DialogFragment {
 //                    BluetoothCommunications.getMessageReceivedTextView().append(Integer.toString(col)+Integer.toString(row)+obstDir);
                     gridMap.canDrawRobot = true;
                     gridMap.setStartCoordStatus(true);
-                    gridMap.setStartCoord(col+1,row+1);
                     gridMap.updateRobotAxis(col+1, row+1, obstDir);
                     Home.refreshDirection(obstDir);
 

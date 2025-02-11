@@ -67,7 +67,6 @@ public class MappingFragment extends Fragment {
         setStartPointToggleBtn = root.findViewById(R.id.startpointToggleBtn);
         directionChangeImageBtn = root.findViewById(R.id.changeDirectionBtn);
         obstacleImageBtn = root.findViewById(R.id.addObstacleBtn);
-//        updateButton = root.findViewById(R.id.updateMapBtn);
         saveMapObstacle = root.findViewById(R.id.saveBtn);
         loadMapObstacle = root.findViewById(R.id.loadBtn);
         dragSwitch = root.findViewById(R.id.dragSwitch);
@@ -156,7 +155,7 @@ public class MappingFragment extends Fragment {
             }
         });
 
-        // switch for changing obstacle
+        // switch for changing obstacle (edit direction)
         changeObstacleSwitch.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton toggleButton, boolean isChecked) {
@@ -169,20 +168,23 @@ public class MappingFragment extends Fragment {
             }
         });
 
+        // button to set start point of robot
         setStartPointToggleBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showLog("Clicked setStartPointToggleBtn");
-                // 2nd consecutive tap on the toggle btn (logic to handle other buttons being tapped is in gridmap.toggleCheckedBtn())
-                if (setStartPointToggleBtn.getText().equals("SET START POINT")) {
-                    showToast("Cancelled select starting point");
-                    setStartPointToggleBtn.setBackgroundResource(R.drawable.border_black);
-                }
-                else {  // 1st tap on the toggle btn
+
+                if (setStartPointToggleBtn.isChecked()) {
+                    // First tap: set the starting point
                     showToast("Please select starting point");
                     gridMap.setStartCoordStatus(true);
-                    gridMap.toggleCheckedBtn("setStartPointToggleBtn");
+                    gridMap.deselectOtherButtons("setStartPointToggleBtn");
                     setStartPointToggleBtn.setBackgroundResource(R.drawable.border_black_pressed);
+                } else {
+                    // Second tap: cancel the starting point selection, to handle other buttons being tapped is in gridmap.toggleCheckedBtn())
+                    showToast("Cancelled select starting point");
+                    setStartPointToggleBtn.setBackgroundResource(R.drawable.border_black);
+                    gridMap.setStartCoordStatus(false);
                 }
             }
         });
@@ -320,7 +322,7 @@ public class MappingFragment extends Fragment {
                 if (!gridMap.getSetObstacleStatus()) {  // if setObstacleStatus is false
                     showToast("Please plot obstacles");
                     gridMap.setSetObstacleStatus(true);
-                    gridMap.toggleCheckedBtn("obstacleImageBtn");
+                    gridMap.deselectOtherButtons("obstacleImageBtn");
                     obstacleImageBtn.setBackgroundResource(R.drawable.border_black_pressed);
                 }
                 else if (gridMap.getSetObstacleStatus()) {  // if setObstacleStatus is true

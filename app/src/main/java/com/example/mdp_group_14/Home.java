@@ -247,24 +247,19 @@ public class Home extends Fragment {
         gridMap.setRobotDirection(direction);
         int x = gridMap.getCurCoord()[0];
         int y = gridMap.getCurCoord()[1];
+        gridMap.setCurCoord(x+1, y+1, direction);
         String dir;
         String newDir = gridMap.getRobotDirection();
-//        newDir = newDir.toUpperCase();
         directionAxisTextView.setText(sharedPreferences.getString("direction","")); //changes the UI direction display as well
-        //printMessage("Direction is set to " + direction); //OLD VER
 
         dir= (newDir.equals("up"))?"NORTH":(newDir.equals("down"))?"SOUTH":(newDir.equals("left"))?"WEST":"EAST";
-        if ((x - 2)>=0 && (y - 1)>=0)
+        if ((x>=0 && y>=0 && x<=19 && y <= 19))
         {
-//          BluetoothCommunications.getMessageReceivedTextView().append("ROBOT" + "," + (col - 2)*5 + "," + (row - 1)*5 + "," + dir.toUpperCase());
-            Home.printMessage("ROBOT" + "," + (x-2)*5 + "," + (y-1)*5 + "," + dir.toUpperCase());
+            Home.printMessage("ROBOT" + "," + (x)* getGridMap().CELL_UNIT_SIZE_CM + getGridMap().CELL_UNIT_SIZE_CM/2 + "," + (y)* getGridMap().CELL_UNIT_SIZE_CM + getGridMap().CELL_UNIT_SIZE_CM/2 + "," + dir.toUpperCase());
         }
         else{
             showLog("out of grid");
         }
-//        printMessage("ROBOT,"+ x + "," + y + "," + dir);
-//        BluetoothCommunications.getMessageReceivedTextView().append("ROBOT,"+ (x-1) +"," + (y-1) + "," + dir+"\n"); //for troubleshooting
-
     }
 
     public static void refreshLabel() {
