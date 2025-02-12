@@ -131,6 +131,7 @@ public class GridMap extends View {
     private static int[] startCoord = new int[]{-1, -1};
     private static int[] curCoord = new int[]{-1, -1};
     private static int[] oldCoord = new int[]{-1, -1};
+    // obstacleCoord stores a list of all the different obstacles' coordinates
     private static ArrayList<int[]> obstacleCoord = new ArrayList<>();
 
     // controls whether or not the robot is to be re-drawn upon calling onDraw() after an invalidate()
@@ -164,7 +165,7 @@ public class GridMap extends View {
     // displayedImageIDs and displayedImageBearings on the other hand are 20x20 arrays, that reflects the UI's displayed grid (which is in cartesian form)
     // so ITEM_LIST.get(0)[0] for example, would represent the origin, row#=1, col#=1
 
-    // displayedImageIDs, stores image ids
+    // displayedImageIDs, grid that stores if obstacle has been scanned
     //    Non-Static: Belongs to an instance of the class.
         //    Each object created will be its own entity
 
@@ -178,7 +179,7 @@ public class GridMap extends View {
             new String[20], new String[20], new String[20], new String[20], new String[20]
     ));
 
-    // displayedImageBearings, stores image direction NSEW
+    // displayedImageBearings, stores all obstacles' directions as a string, "North" e.g.
     //    Static: Belongs to the class itself, shared across all instances.
         //    There is only one shared copy of this list for all instances of the class.
     public static ArrayList<String[]> displayedImageBearings = new ArrayList<>(Arrays.asList(
@@ -442,6 +443,7 @@ public class GridMap extends View {
     // draws obstacle cells whenever map refreshes
     private void drawObstacles(Canvas canvas) {
         showLog("Entering drawObstacles");
+        // obstacleCoord is a list of all the obstacles
         for (int i = 0; i < obstacleCoord.size(); i++) { // for each recorded obstacle
             // get col and row (zero-indexed)
             int col = obstacleCoord.get(i)[0];
@@ -555,16 +557,21 @@ public class GridMap extends View {
         int xCoord = colNum-1;
         int yCoord = rowNum-1;
 
-        // set curCoord of robot
-        // only can edit curcoord if startCoordStatus is true i.e. "set start point" button toggled
-        if (this.getStartCoordStatus())
-            this.setCurCoord(colNum, rowNum, direction);
-
-        // if robot in range, send bluetooth msg
+        //if robot in range
         if ((xCoord >= 1 && xCoord <= 18) && (yCoord >= 1 && yCoord <= 18)) {
+            // set curCoord of robot
+            // only can edit curcoord if startCoordStatus is true i.e. "set start point" button toggled
+            if (this.getStartCoordStatus()) {
+                this.setCurCoord(colNum, rowNum, direction);
+                startCoord[0] = xCoord;
+                startCoord[1] = yCoord;
+            }
+            // send bluetooth msg
             Home.printMessage("ROBOT" + "," + xCoord * CELL_UNIT_SIZE_CM + CELL_UNIT_SIZE_CM/2 + "," + yCoord * CELL_UNIT_SIZE_CM + CELL_UNIT_SIZE_CM/2 + "," + dir.toUpperCase());
         } else {
-            showLog("out of grid");
+            showToast("Robot Out of Grid");
+            resetRobotCoordinate();
+            showLog("out of grid" + startCoord[0] + "," + startCoord[1] + " " + curCoord[0] + "," + curCoord[1] );
         }
         showLog("Exiting setStartCoord");
     }
@@ -575,6 +582,7 @@ public class GridMap extends View {
 
     // updates curCoord of robot
     // also sets 3x3 grid in cells to type="robot"
+    // also calls updateRobotAxis that updates display of coordinates
     public void setCurCoord(int colNum, int rowNum, String direction) {
         showLog("Entering setCurCoord");
 
@@ -726,7 +734,9 @@ public class GridMap extends View {
     private static void showLog(String message) {
         Log.d(TAG, message);
     }
-
+    private void showToast(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
 
 
     // drag event to move obstacle
@@ -1077,7 +1087,7 @@ public class GridMap extends View {
                     e.printStackTrace();
                 }
 
-                updateRobotAxis(colNum, rowNum, direction);
+//                updateRobotAxis(colNum, rowNum, direction);
                 if (setStartPointToggleBtn.isChecked()) {
                     setStartPointToggleBtn.toggle();
                     setStartPointToggleBtn.setBackgroundResource(R.drawable.border_black);
@@ -1090,11 +1100,22 @@ public class GridMap extends View {
             // place obstacles on map
             if (setObstacleStatus) {
                 if ((1 <= rowNum && rowNum <= 20) && (1 <= colNum && colNum <= 20)) { // if touch is within the grid
-
+                    int coordX = colNum-1;
+                    int coordY = rowNum-1;
+                    // extract start point to see if clash
+                    int startcoordX = startCoord[0];
+                    int startcoordY = startCoord[1];
                     if (!displayedImageIDs.get(rowNum - 1)[colNum - 1].equals("")
                             || !displayedImageBearings.get(rowNum - 1)[colNum - 1].equals("")) {
                         showLog("An obstacle is already at drop location");
-                    } else {
+                        showToast("Invalid Location: Clash with Other Obstacle");
+                    }
+
+                    else if (coordX >= startcoordX-1 && coordX <= startcoordX + 1 && coordY >= startcoordY - 1 && coordY <= startcoordY + 1) {
+                        showLog("Obstacle clashes with robot at drop location");
+                        showToast("Invalid Location: Clash with Robot");
+                    }
+                    else {
                         // get user input from spinners in MapTabFragment static values
                         // imageID is "", imageBearing is "North"
                         String imageID = (MappingFragment.imageID).equals("Nil") ?
@@ -1163,6 +1184,25 @@ public class GridMap extends View {
     }
 
 
+    public void resetRobotCoordinate() {
+        showLog("Entering resetRobotCoordinate");
+        TextView robotStatusTextView = ((Activity) this.getContext())
+                .findViewById(R.id.robotStatus);
+
+        updateRobotAxis(1, 1, "None");
+
+        robotStatusTextView.setText("Not Available");
+
+        startCoord = new int[]{-1, -1};
+        curCoord = new int[]{-1, -1};
+        oldCoord = new int[]{-1, -1};
+        robotDirection = "None";
+        canDrawRobot = false;
+        validPosition = false;
+
+        showLog("Exiting resetRobotCoordinate");
+        this.invalidate();
+    }
     public void resetMap() {
         showLog("Entering resetMap");
         TextView robotStatusTextView = ((Activity) this.getContext())

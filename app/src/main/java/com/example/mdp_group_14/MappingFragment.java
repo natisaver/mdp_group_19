@@ -320,7 +320,7 @@ public class MappingFragment extends Fragment {
                 showLog("Clicked obstacleImageBtn");
 
                 if (!gridMap.getSetObstacleStatus()) {  // if setObstacleStatus is false
-                    showToast("Please plot obstacles");
+                    showToast("Please plot obstacles at valid location");
                     gridMap.setSetObstacleStatus(true);
                     gridMap.deselectOtherButtons("obstacleImageBtn");
                     obstacleImageBtn.setBackgroundResource(R.drawable.border_black_pressed);
