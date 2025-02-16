@@ -414,6 +414,15 @@ public class GridMap extends View {
             return;
         }
 
+        // revert any cells thats of robot and direction
+        for (int i = 0; i < 21; i++) {
+            for (int j = 0; j < 21; j++) {
+                if (cells[i][j].type.equals("robot") || cells[i][j].type.equals("robotfront")) {
+                    cells[i][j].setType("unexplored");
+                }
+            }
+        }
+
         // set 3x3 grid to type robot
         for (int x = col - 1; x <= col+1; x++)
             for (int y = row - 1; y <= row+1; y++)
@@ -557,6 +566,20 @@ public class GridMap extends View {
         int xCoord = colNum-1;
         int yCoord = rowNum-1;
 
+        // check if robot clash with any obstacles
+        // if got obstacle with direction, i.e. displayedImageBearings or scanned displayedImageIDs
+        for (int i = rowNum-2; i <= rowNum; i++) {
+            for (int j = colNum-2; j <= colNum; j++) {
+                if (!displayedImageIDs.get(i)[j].equals("") ||
+                        !displayedImageBearings.get(i)[j].equals("")) {
+                    showToast("Invalid Location: Clash with Obstacle");
+                    resetRobotCoordinate();
+                    showLog("Exiting setStartCoord");
+                    return;
+                }
+            }
+        }
+
         //if robot in range
         if ((xCoord >= 1 && xCoord <= 18) && (yCoord >= 1 && yCoord <= 18)) {
             // set curCoord of robot
@@ -595,14 +618,37 @@ public class GridMap extends View {
             return;
         }
 
+        // check if robot clash with any obstacles
+        // if got obstacle with direction, i.e. displayedImageBearings or scanned displayedImageIDs
+        for (int i = rowNum-2; i <= rowNum; i++) {
+            for (int j = colNum-2; j <= colNum; j++) {
+                if (!displayedImageIDs.get(i)[j].equals("") ||
+                        !displayedImageBearings.get(i)[j].equals("")) {
+                    showToast("Invalid Location: Clash with Obstacle");
+                    showLog("setCurCoord: Robot clashes with obstacle");
+                    return;
+                }
+            }
+        }
+
         curCoord[0] = xCoord;
         curCoord[1] = yCoord;
+        validPosition = true;
 
         this.setRobotDirection(direction);
         this.updateRobotAxis(colNum, rowNum, direction);
 
         int row = this.convertRow(rowNum);
         int col = colNum;
+
+        // revert any cells thats of robot and direction
+        for (int i = 0; i < 21; i++) {
+            for (int j = 0; j < 21; j++) {
+                if (cells[i][j].type.equals("robot") || cells[i][j].type.equals("robotfront")) {
+                    cells[i][j].setType("unexplored");
+                }
+            }
+        }
         // set 3x3 grid to type robot
         for (int x = col - 1; x <= col+1; x++)
             for (int y = row - 1; y <= row+1; y++)
@@ -659,9 +705,9 @@ public class GridMap extends View {
             showLog("oldRow has gone out of grid.");
             return;
         }
-        for (int x = oldCol - 1; x <= oldCol; x++)
-            for (int y = oldRow - 1; y <= oldRow; y++)
-                cells[x][y].setType("explored");
+//        for (int x = oldCol - 1; x <= oldCol; x++)
+//            for (int y = oldRow - 1; y <= oldRow; y++)
+//                cells[x][y].setType("explored");
         showLog("Exiting setOldRobotCoord");
     }
 
@@ -1234,45 +1280,42 @@ public class GridMap extends View {
         this.invalidate();
     }
 
-    // e.g obstacle is on right side of 2x2 and can turn left and vice versa
-    public void moveRobot(String direction) {
+    // e.g obstacle is on right side of 3x3 and can turn left and vice versa
+    public void moveRobot(String btnDirection) {
         showLog("Entering moveRobot");
         setValidPosition(false);
         int[] curCoord = this.getCurCoord();
-
-        ArrayList<int[]> obstacleCoord = this.getObstacleCoord();
         this.setOldRobotCoord(curCoord[0], curCoord[1]);
         int[] oldCoord = this.getOldRobotCoord();
+        // list of all the obstacles
+        ArrayList<int[]> obstacleCoord = this.getObstacleCoord();
         String robotDirection = getRobotDirection();
         String backupDirection = robotDirection;
 
-        //added new variables for pathing
-        int moves = 0;
-        int remainder = 0;
-
-        Integer[] newCoords = Arrays.stream(this.getCurCoord()).boxed().toArray( Integer[]::new );
-//        newCoords[0]=newCoords[0]-2;
-//        newCoords[1]=newCoords[1]-1;
-//        Home.refreshMessageReceivedNS(newCoords[0]);
-//        Home.refreshMessageReceivedNS(newCoords[1]);
-        // check if got obstacle when moving one grid up before turning in each case
-        // checking for each combination of (current robot facing direction, movement direction)
-        int tempCurCood1 = -1;
-        int tempCurCood0 = -1;
+        Integer[] newCoords = Arrays.stream(curCoord).boxed().toArray( Integer[]::new );
 
         Map.Entry<String, ArrayList<Integer[]>> entry;
-        switch (direction) {
+        switch (btnDirection) {
             case "forward":
             case "back": {
-                Integer[] last = Straight.straight(newCoords, robotDirection, direction);
-                if (last[0] < 2 || last[1] < 1 || 21 <= last[0] || 20 <= last[1]) {
+                Integer[] nextCoord = Straight.straight(newCoords, robotDirection, btnDirection);
+                int nextXCoord = nextCoord[0];
+                int nextYCoord = nextCoord[1];
+                // if out of range, dont update new coordinate
+                if (!((nextXCoord >= 1 && nextXCoord <= 18) && (nextYCoord >= 1 && nextYCoord <= 18))) {
                     break;
                 }
+                // if still in range, update new coordinate
+                showLog("Enter checking for obstacles in destination 3x3 grid");
+                setCurCoord(nextXCoord+1, nextYCoord+1, robotDirection);
+//                int colNum = curCoord[0] + 1;
+//                int rowNum = curCoord[1] + 1;
 
-                curCoord[0] = last[0];
-                curCoord[1] = last[1];
-                cells[curCoord[0]][20 - curCoord[1]].setType("explored");
-                validPosition = true;
+                showLog("New coor is at: " + curCoord[0] + "," + curCoord[1]);
+                // update the explored cells
+//                cells[colNum+1][20 - rowNum - 2].setType("explored");
+//                cells[colNum+2][20 - rowNum - 2].setType("explored");
+//                cells[colNum+3][20 - rowNum - 2].setType("explored");
             }
                 break;
 
@@ -1338,35 +1381,40 @@ public class GridMap extends View {
         }
 //
 
-        showLog("Enter checking for obstacles in destination 2x2 grid");
-        if (getValidPosition())
-            // check obstacle for new position
-            for (int x = curCoord[0] - 1; x <= curCoord[0]; x++) {
-                for (int y = curCoord[1] - 1; y <= curCoord[1]; y++) {
-                    for (int i = 0; i < obstacleCoord.size(); i++) {
-                        showLog("x-1 = " + (x - 1) + ", y = " + y);
-                        showLog("obstacleCoord.get(" + i + ")[0] = " + obstacleCoord.get(i)[0]
-                                + ", obstacleCoord.get(" + i + ")[1] = " + obstacleCoord.get(i)[1]);
-                        if (obstacleCoord.get(i)[0] == (x - 1) && obstacleCoord.get(i)[1] == y) { // HERE x
-                            setValidPosition(false);
-                            robotDirection = backupDirection;
-                            break;
-                        }
-                    }
-                    if (!getValidPosition())
-                        break;
-                }
-                if (!getValidPosition())
-                    break;
-            }
-        showLog("Exit checking for obstacles in destination 2x2 grid");
-        if (getValidPosition())
-            this.setCurCoord(curCoord[0], curCoord[1], robotDirection);
-        else {
-            if (direction.equals("forward") || direction.equals("back"))
-                robotDirection = backupDirection;
-            this.setCurCoord(oldCoord[0], oldCoord[1], robotDirection);
-        }
+//        showLog("Enter checking for obstacles in destination 2x2 grid");
+//        if (getValidPosition())
+//            // check obstacle for new position
+//            for (int x = curCoord[0] - 1; x <= curCoord[0]; x++) {
+//                for (int y = curCoord[1] - 1; y <= curCoord[1]; y++) {
+//                    for (int i = 0; i < obstacleCoord.size(); i++) {
+//                        showLog("x-1 = " + (x - 1) + ", y = " + y);
+//                        showLog("obstacleCoord.get(" + i + ")[0] = " + obstacleCoord.get(i)[0]
+//                                + ", obstacleCoord.get(" + i + ")[1] = " + obstacleCoord.get(i)[1]);
+//                        if (obstacleCoord.get(i)[0] == (x - 1) && obstacleCoord.get(i)[1] == y) { // HERE x
+//                            setValidPosition(false);
+//                            robotDirection = backupDirection;
+//                            break;
+//                        }
+//                    }
+//                    if (!getValidPosition())
+//                        break;
+//                }
+//                if (!getValidPosition())
+//                    break;
+//            }
+//        showLog("Exit checking for obstacles in destination 2x2 grid");
+        int colNum = curCoord[0] + 1;
+        int rowNum = curCoord[1] + 1;
+        int oldColNum = oldCoord[0] + 1;
+        int oldRowNum = oldCoord[1] + 1;
+//        if (getValidPosition())
+//            // recall setcurcoord takes in rowNum, colNum
+//            this.setCurCoord(colNum, rowNum, robotDirection);
+//        else {
+//            if (btnDirection.equals("forward") || btnDirection.equals("back"))
+//                robotDirection = backupDirection;
+//            this.setCurCoord(oldColNum, oldRowNum, robotDirection);
+//        }
         this.invalidate();
         showLog("Exiting moveRobot");
     }
