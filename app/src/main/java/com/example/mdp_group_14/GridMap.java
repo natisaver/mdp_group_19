@@ -154,6 +154,7 @@ public class GridMap extends View {
 
     // cells is a 2d array of the cells, its initialised via createCell() in onDraw()
     // its used to draw the custom grid on the view, in this case its a 21x21 grid, to account for the grid labels as well, it starts from top left cell
+    // however weird thing is its accessed cells[col][row]
     private static Cell[][] cells;
     Map<String, String> val2IdxMap;
 
@@ -425,8 +426,9 @@ public class GridMap extends View {
 
         // set 3x3 grid to type robot
         for (int x = col - 1; x <= col+1; x++)
-            for (int y = row - 1; y <= row+1; y++)
+            for (int y = row - 1; y <= row+1; y++) {
                 cells[x][y].setType("robot");
+            }
 
         // Determine the front of the robot based on direction
         showLog("current robot direction = " + getRobotDirection().toLowerCase());
@@ -1088,10 +1090,10 @@ public class GridMap extends View {
                 // canDrawRobot is True if robot alr on grid
                 if (canDrawRobot) {
                     // removes old robot (type robot -> type unexplored) when user changes robot startpoint
-                    for (int i = 0; i < 21; i++) {
-                        for (int j = 0; j < 21; j++) {
-                            if (cells[i][j].type.equals("robot") || cells[i][j].type.equals("robotfront")) {
-                                cells[i][j].setType("unexplored");
+                    for (int col = 0; col < 21; col++) {
+                        for (int row = 0; row < 21; row++) {
+                            if (cells[col][row].type.equals("robot") || cells[col][row].type.equals("robotfront")) {
+                                cells[col][row].setType("unexplored");
                             }
                         }
                     }
@@ -1148,16 +1150,25 @@ public class GridMap extends View {
                 if ((1 <= rowNum && rowNum <= 20) && (1 <= colNum && colNum <= 20)) { // if touch is within the grid
                     int coordX = colNum-1;
                     int coordY = rowNum-1;
-                    // extract start point to see if clash
-                    int startcoordX = startCoord[0];
-                    int startcoordY = startCoord[1];
+                    // for cells
+                    int row = convertRow(rowNum);
+                    int col = colNum;
+
+//                    // log robot location to see if clash
+//                    for (int i = 0; i < 21; i++) {
+//                        for (int j = 0; j < 21; j++) {
+//                            if (cells[i][j].type.equals("robot") || cells[i][j].type.equals("robotfront")) {
+//                                showLog("Gyatt" + i + "," + j);
+//                            }
+//                        }
+//                    }
                     if (!displayedImageIDs.get(rowNum - 1)[colNum - 1].equals("")
                             || !displayedImageBearings.get(rowNum - 1)[colNum - 1].equals("")) {
                         showLog("An obstacle is already at drop location");
                         showToast("Invalid Location: Clash with Other Obstacle");
                     }
-
-                    else if (coordX >= startcoordX-1 && coordX <= startcoordX + 1 && coordY >= startcoordY - 1 && coordY <= startcoordY + 1) {
+                    else if ("robotfront".equals(cells[col][row].type) || "robot".equals(cells[col][row].type)) {
+//                        showLog("gyat" + rowNum + " "+ colNum);
                         showLog("Obstacle clashes with robot at drop location");
                         showToast("Invalid Location: Clash with Robot");
                     }
@@ -1295,6 +1306,7 @@ public class GridMap extends View {
         Integer[] newCoords = Arrays.stream(curCoord).boxed().toArray( Integer[]::new );
 
         Map.Entry<String, ArrayList<Integer[]>> entry;
+
         switch (btnDirection) {
             case "forward":
             case "back": {
@@ -1321,58 +1333,71 @@ public class GridMap extends View {
 
             case "left": {
                 entry = Turn.turn(newCoords,robotDirection,"left");
-                Integer[] last = entry.getValue().get(entry.getValue().size() - 1);
-                if (last[0] < 2 || last[1] < 1 || 20 <= last[0] || 20 <= last[1]) {
+                // as turn gives a list of points along turning path, extract last point
+                Integer[] nextCoord = entry.getValue().get(entry.getValue().size() - 1);
+                robotDirection = entry.getKey();
+                int nextXCoord = nextCoord[0];
+                int nextYCoord = nextCoord[1];
+                // if out of range, dont update new coordinate
+                if (!((nextXCoord >= 1 && nextXCoord <= 18) && (nextYCoord >= 1 && nextYCoord <= 18))) {
                     break;
                 }
-                curCoord[0] = last[0];
-                curCoord[1] = last[1];
-                cells[curCoord[0]][20 - curCoord[1]].setType("explored");
-                robotDirection = entry.getKey();
-                validPosition = true;
+                // if still in range, update new coordinate
+                showLog("Enter checking for obstacles in destination 3x3 grid");
+                setCurCoord(nextXCoord+1, nextYCoord+1, robotDirection);
+                showLog("New coor is at: " + curCoord[0] + "," + curCoord[1]);
             }
                 break;
 
             case "right": {
                 entry = Turn.turn(newCoords,robotDirection,"right");
-                Integer[] last = entry.getValue().get(entry.getValue().size() - 1);
-                if (last[0] < 2 || last[1] < 1 || 20 <= last[0] || 20 <= last[1]) {
+                Integer[] nextCoord = entry.getValue().get(entry.getValue().size() - 1);                robotDirection = entry.getKey();
+                robotDirection = entry.getKey();
+                int nextXCoord = nextCoord[0];
+                int nextYCoord = nextCoord[1];
+                // if out of range, dont update new coordinate
+                if (!((nextXCoord >= 1 && nextXCoord <= 18) && (nextYCoord >= 1 && nextYCoord <= 18))) {
                     break;
                 }
-                curCoord[0] = last[0];
-                curCoord[1] = last[1];
-                cells[curCoord[0]][20 - curCoord[1]].setType("explored");
-                robotDirection = entry.getKey();
-                validPosition = true;
+                // if still in range, update new coordinate
+                showLog("Enter checking for obstacles in destination 3x3 grid");
+                setCurCoord(nextXCoord+1, nextYCoord+1, robotDirection);
+                showLog("New coor is at: " + curCoord[0] + "," + curCoord[1]);
             }
                 break;
 
             // testing new direction of movement (facing forward)
             case "backleft": {
                 entry = Turn.turn(newCoords,robotDirection,"backleft");
-                Integer[] last = entry.getValue().get(entry.getValue().size() - 1);
-                if (last[0] < 2 || last[1] < 1 || 20 <= last[0] || 20 <= last[1]) {
+                Integer[] nextCoord = entry.getValue().get(entry.getValue().size() - 1);
+                robotDirection = entry.getKey();
+                int nextXCoord = nextCoord[0];
+                int nextYCoord = nextCoord[1];
+                // if out of range, dont update new coordinate
+                if (!((nextXCoord >= 1 && nextXCoord <= 18) && (nextYCoord >= 1 && nextYCoord <= 18))) {
                     break;
                 }
-                curCoord[0] = last[0];
-                curCoord[1] = last[1];
-                cells[curCoord[0]][20 - curCoord[1]].setType("explored");
-                robotDirection = entry.getKey();
-                validPosition = true;
+                // if still in range, update new coordinate
+                showLog("Enter checking for obstacles in destination 3x3 grid");
+                setCurCoord(nextXCoord+1, nextYCoord+1, robotDirection);
+                showLog("New coor is at: " + curCoord[0] + "," + curCoord[1]);
             }
                 break;
 
             case "backright": {
                 entry = Turn.turn(newCoords,robotDirection,"backright");
-                Integer[] last = entry.getValue().get(entry.getValue().size() - 1);
-                if (last[0] < 2 || last[1] < 1 || 20 <= last[0] || 20 <= last[1]) {
+                Integer[] nextCoord = entry.getValue().get(entry.getValue().size() - 1);
+                robotDirection = entry.getKey();
+                int nextXCoord = nextCoord[0];
+                int nextYCoord = nextCoord[1];
+                // if out of range, dont update new coordinate
+                if (!((nextXCoord >= 1 && nextXCoord <= 18) && (nextYCoord >= 1 && nextYCoord <= 18))) {
                     break;
                 }
-                curCoord[0] = last[0];
-                curCoord[1] = last[1];
-                cells[curCoord[0]][20 - curCoord[1]].setType("explored");
-                robotDirection = entry.getKey();
-                validPosition = true;
+                // if still in range, update new coordinate
+                showLog("Enter checking for obstacles in destination 3x3 grid");
+                setCurCoord(nextXCoord+1, nextYCoord+1, robotDirection);
+                showLog("New coor is at: " + curCoord[0] + "," + curCoord[1]);
             }
                 break;
             default:

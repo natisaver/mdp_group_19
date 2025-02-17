@@ -9,7 +9,7 @@ import java.util.function.BiFunction;
 
 public class Turn {
 
-    public static Map.Entry<String, ArrayList<Integer[]>> turn(Integer[] start, String direction, String turn) {
+    public static Map.Entry<String, ArrayList<Integer[]>> turn(Integer[] startCoord, String direction, String turn) {
         int radius = radius(turn);
         Integer[] initial;
         switch (direction) {
@@ -19,11 +19,11 @@ public class Turn {
                         return new SimpleEntry<>(
                           "left",
                           curve(
-                            start,
-                            new Integer[] {start[0] - radius - 1, start[1] + radius},
+                            startCoord,
+                            new Integer[] {startCoord[0] - radius - 1, startCoord[1] + radius},
                             radius,
-                            start[0] - radius,
-                            start[1],
+                            startCoord[0] - radius,
+                            startCoord[1],
                             1
                           )
                         );
@@ -31,11 +31,11 @@ public class Turn {
                         return new SimpleEntry<>(
                           "right",
                           curve(
-                            start,
-                            new Integer[] {start[0] + radius, start[1] + radius - 1},
+                            startCoord,
+                            new Integer[] {startCoord[0] + radius, startCoord[1] + radius - 1},
                             radius,
-                            start[0] + radius,
-                            start[1],
+                            startCoord[0] + radius,
+                            startCoord[1],
                             2
                           )
                         );
@@ -43,11 +43,11 @@ public class Turn {
                         return new SimpleEntry<>(
                           "right",
                           curve(
-                            start,
-                            new Integer[] {start[0] - radius, start[1] - radius - 1},
+                            startCoord,
+                            new Integer[] {startCoord[0] - radius, startCoord[1] - radius - 1},
                             radius,
-                            start[0] - radius,
-                            start[1],
+                            startCoord[0] - radius,
+                            startCoord[1],
                             4
                           )
                         );
@@ -55,18 +55,18 @@ public class Turn {
                         return new SimpleEntry<>(
                           "left",
                           curve(
-                            start,
-                            new Integer[] {start[0] + radius - 1, start[1] - radius},
+                            startCoord,
+                            new Integer[] {startCoord[0] + radius - 1, startCoord[1] - radius},
                             radius,
-                            start[0] + radius,
-                            start[1],
+                            startCoord[0] + radius,
+                            startCoord[1],
                             3
                           )
                         );
                 }
 
             case "right":
-                initial = new Integer[] {start[0], start[1] + 1};
+                initial = new Integer[] {startCoord[0], startCoord[1] + 1};
                 switch (turn) {
                     case "left":
                         return new SimpleEntry<>(
@@ -120,7 +120,7 @@ public class Turn {
                 }
 
             case "down":
-                initial = new Integer[] {start[0] + 1, start[1] + 1};
+                initial = new Integer[] {startCoord[0] + 1, startCoord[1] + 1};
                 switch (turn) {
                     case "left":
                         return new SimpleEntry<>(
@@ -173,7 +173,7 @@ public class Turn {
                 }
 
             case "left":
-                initial = new Integer[] {start[0] + 1, start[1]};
+                initial = new Integer[] {startCoord[0] + 1, startCoord[1]};
                 switch (turn) {
                     case "left":
                         return new SimpleEntry<>(
