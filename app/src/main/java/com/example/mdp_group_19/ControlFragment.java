@@ -1,6 +1,6 @@
-package com.example.mdp_group_14;
+package com.example.mdp_group_19;
 
-import static com.example.mdp_group_14.Home.refreshMessageReceivedNS;
+import static com.example.mdp_group_19.Home.refreshMessageReceivedNS;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -11,7 +11,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;

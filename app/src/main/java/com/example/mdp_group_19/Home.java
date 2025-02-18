@@ -1,4 +1,4 @@
-package com.example.mdp_group_14;
+package com.example.mdp_group_19;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -315,26 +316,26 @@ public class Home extends Fragment {
             String message = intent.getStringExtra("receivedMessage");
             showLog("receivedMessage: message --- " + message);
 
-            String[] cmdd = message.split(",");
-
-//            if (message.contains(" "))
-//            {
-//                message= Arrays.toString(message.split(" "));
-//            }
-//            showLog("cmd1 --- " + cmdd[1]);
-//            showLog("cmd2 --- " + cmdd[2]);
-
-
             int[] global_store = gridMap.getCurCoord();
             g_coordX = global_store[0];
             g_coordY = global_store[1];
-            ArrayList<String> mapCoord = new ArrayList<>();
 
+            // for amd tool testing
+            // {"status":"reversing"}
+            if (message.contains("status")) {
+                try {
+                    JSONObject jsonObject = new JSONObject(message);
+                    String status = jsonObject.getString("status");
+                    robotStatusTextView.setText(status);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             //STATUS:<input>
             if (message.contains("STATUS")) {
                 robotStatusTextView.setText(message.split(":")[1]);
             }
-            //ROBOT|5,4,EAST (Early version of updating robot position via comms)
+            //ROBOT|5,4,EAST
             if(message.contains("ROBOT")) {
                 String[] cmd = message.split("\\|");
                 String[] sentCoords = cmd[1].split(",");
@@ -357,28 +358,18 @@ public class Home extends Fragment {
                 else{
                     direction = "";
                 }
-                gridMap.setCurCoord(Integer.valueOf(sentCoords[1]) + 2, 19 - Integer.valueOf(sentCoords[0]), direction);
+                int colNum = Integer.parseInt(sentCoords[0]) + 1;
+                int rowNum = Integer.parseInt(sentCoords[1]) + 1;
+
+                gridMap.setCurCoord(colNum, rowNum, direction);
             }
-            //image format from RPI is "TARGET~<obID>~<ImValue>" eg TARGET~3~7
+            //image format from RPI is "TARGET,<obstacleID>,<ImageNumber>" eg TARGET,3,7
             else if(message.contains("TARGET")) {
                 try {
                     String[] cmd = message.split(",");
-                    String temp2="-1";
                     BluetoothCommunications.getMessageReceivedTextView().append("Obstacle no: " + cmd[1]+ "TARGET ID: " + cmd[2] + "\n");
-
-//                    if (cmd[2].contains("STOP"))
-//                    {
-//                        String temp=cmd[2];
-//                        String[] temp1=temp.split(" ");
-//                        temp2=temp1[0];
-//
-//                    }
-
                     gridMap.updateIDFromRpi(String.valueOf(Integer.valueOf(cmd[1])-1), cmd[2]);
                     obstacleID = String.valueOf(Integer.valueOf(cmd[1]) - 2);
-
-
-//                    int ob= Integer.parseInt(obstacleID);
 
                 }
                 catch(Exception e)
@@ -416,8 +407,8 @@ public class Home extends Fragment {
                 timerHandler.removeCallbacks(ControlFragment.timerRunnableFastest);
             }
             else{
-                BluetoothCommunications.getMessageReceivedTextView().append("unknown message received");
-                showLog("unknown message received");
+//                BluetoothCommunications.getMessageReceivedTextView().append("unknown message received: ");
+                showLog("message received but without keywords");
             }
         }
     };

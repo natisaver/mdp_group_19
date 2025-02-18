@@ -22,14 +22,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MDP_Grp_14">
         <activity
-            android:name="com.example.mdp_group_14.MainActivity"
+            android:name="com.example.mdp_group_19.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.mdp_group_14.BluetoothSetUp"/>
+        <activity android:name="com.example.mdp_group_19.BluetoothSetUp"/>
     </application>
 
 </manifest>

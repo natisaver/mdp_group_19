@@ -1,4 +1,4 @@
-package com.example.mdp_group_14.ui.theme
+package com.example.mdp_group_19.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

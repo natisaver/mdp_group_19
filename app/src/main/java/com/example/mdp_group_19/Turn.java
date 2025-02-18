@@ -1,11 +1,10 @@
-package com.example.mdp_group_14;
+package com.example.mdp_group_19;
 
 import java.util.*;
 import java.util.AbstractMap.*;
 import java.util.function.BiFunction;
 
 import java.util.ArrayList;
-import java.util.function.BiFunction;
 
 public class Turn {
 

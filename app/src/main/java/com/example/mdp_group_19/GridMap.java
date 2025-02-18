@@ -1,4 +1,4 @@
-package com.example.mdp_group_14;
+package com.example.mdp_group_19;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,8 +6,6 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -115,6 +113,8 @@ public class GridMap extends View {
     private final Paint blackPaint = new Paint();
     private final Paint whitePaint = new Paint();
     private final Paint maroonPaint = new Paint();
+    private final Paint purplePaint = new Paint();
+
     private final Paint obstacleColor = new Paint();
     private final Paint imageColor = new Paint();
     private final Paint robotColor = new Paint();
@@ -218,6 +218,8 @@ public class GridMap extends View {
         whitePaint.setTextAlign(Paint.Align.CENTER);
         maroonPaint.setColor(getResources().getColor(R.color.brightRed));
         maroonPaint.setStrokeWidth(8);
+        purplePaint.setColor(getResources().getColor(R.color.purple)); // Replace with actual color resource
+        purplePaint.setStrokeWidth(8);
         obstacleColor.setColor(getResources().getColor(R.color.black));
         imageColor.setColor(getResources().getColor(R.color.rockColor));
         robotColor.setColor(getResources().getColor(R.color.pikaYellow));
@@ -470,6 +472,46 @@ public class GridMap extends View {
                         cells[col + 1][19 - row].startY + ((cells[1][1].endY - cells[1][1].startY) / 2) + 5,
                         whitePaint
                 );
+                // color the face direction
+                // imageBearings.get(row)[col], row and col are just zero-indexed based on the displayed grid (range is 0 - 19)
+                switch (displayedImageBearings.get(row)[col]) {
+                    case "North":
+                        canvas.drawLine(
+                                cells[col + 1][19 - row].startX,
+                                cells[col + 1][19 - row].startY,
+                                cells[col + 1][19 - row].endX,
+                                cells[col + 1][19 - row].startY,
+                                maroonPaint
+                        );
+                        break;
+                    case "South":
+                        canvas.drawLine(
+                                cells[col + 1][19 - row].startX,
+                                cells[col + 1][19 - row].startY + cellSize,
+                                cells[col + 1][19 - row].endX,
+                                cells[col + 1][19 - row].startY + cellSize,
+                                maroonPaint
+                        );
+                        break;
+                    case "East":
+                        canvas.drawLine(
+                                cells[col + 1][19 - row].startX + cellSize,
+                                cells[col + 1][19 - row].startY,
+                                cells[col + 1][19 - row].startX + cellSize,
+                                cells[col + 1][19 - row].endY,
+                                maroonPaint
+                        );
+                        break;
+                    case "West":
+                        canvas.drawLine(
+                                cells[col + 1][19 - row].startX,
+                                cells[col + 1][19 - row].startY,
+                                cells[col + 1][19 - row].startX,
+                                cells[col + 1][19 - row].endY,
+                                maroonPaint
+                        );
+                        break;
+                }
             } else {    // cells[col + 1][19 - row] is an explored obstacle (image has been identified)
                 showLog("drawObstacles: drawing image ID");
                 whitePaint.setTextSize(17);
@@ -479,48 +521,49 @@ public class GridMap extends View {
                         cells[col + 1][19 - row].startY + ((cells[1][1].endY - cells[1][1].startY) / 2) + 10,
                         whitePaint
                 );
+                // color the face direction
+                // imageBearings.get(row)[col], row and col are just zero-indexed based on the displayed grid (range is 0 - 19)
+                switch (displayedImageBearings.get(row)[col]) {
+                    case "North":
+                        canvas.drawLine(
+                                cells[col + 1][19 - row].startX,
+                                cells[col + 1][19 - row].startY,
+                                cells[col + 1][19 - row].endX,
+                                cells[col + 1][19 - row].startY,
+                                purplePaint
+                        );
+                        break;
+                    case "South":
+                        canvas.drawLine(
+                                cells[col + 1][19 - row].startX,
+                                cells[col + 1][19 - row].startY + cellSize,
+                                cells[col + 1][19 - row].endX,
+                                cells[col + 1][19 - row].startY + cellSize,
+                                purplePaint
+                        );
+                        break;
+                    case "East":
+                        canvas.drawLine(
+                                cells[col + 1][19 - row].startX + cellSize,
+                                cells[col + 1][19 - row].startY,
+                                cells[col + 1][19 - row].startX + cellSize,
+                                cells[col + 1][19 - row].endY,
+                                purplePaint
+                        );
+                        break;
+                    case "West":
+                        canvas.drawLine(
+                                cells[col + 1][19 - row].startX,
+                                cells[col + 1][19 - row].startY,
+                                cells[col + 1][19 - row].startX,
+                                cells[col + 1][19 - row].endY,
+                                purplePaint
+                        );
+                        break;
+                }
             }
 
-            // color the face direction
-            // imageBearings.get(row)[col], row and col are just zero-indexed based on the displayed grid (range is 0 - 19)
-            switch (displayedImageBearings.get(row)[col]) {
-                case "North":
-                    canvas.drawLine(
-                            cells[col + 1][19 - row].startX,
-                            cells[col + 1][19 - row].startY,
-                            cells[col + 1][19 - row].endX,
-                            cells[col + 1][19 - row].startY,
-                            maroonPaint
-                    );
-                    break;
-                case "South":
-                    canvas.drawLine(
-                            cells[col + 1][19 - row].startX,
-                            cells[col + 1][19 - row].startY + cellSize,
-                            cells[col + 1][19 - row].endX,
-                            cells[col + 1][19 - row].startY + cellSize,
-                            maroonPaint
-                    );
-                    break;
-                case "East":
-                    canvas.drawLine(
-                            cells[col + 1][19 - row].startX + cellSize,
-                            cells[col + 1][19 - row].startY,
-                            cells[col + 1][19 - row].startX + cellSize,
-                            cells[col + 1][19 - row].endY,
-                            maroonPaint
-                    );
-                    break;
-                case "West":
-                    canvas.drawLine(
-                            cells[col + 1][19 - row].startX,
-                            cells[col + 1][19 - row].startY,
-                            cells[col + 1][19 - row].startX,
-                            cells[col + 1][19 - row].endY,
-                            maroonPaint
-                    );
-                    break;
-            }
+
         }
         showLog("Exiting drawObstacles");
     }
@@ -616,6 +659,7 @@ public class GridMap extends View {
         int yCoord = rowNum-1;
 
         if ((xCoord < 1 || xCoord > 18) || (yCoord < 1 || yCoord > 18)) {
+            showToast("Robot Out of Grid");
             showLog("coordinate is out of bounds");
             return;
         }

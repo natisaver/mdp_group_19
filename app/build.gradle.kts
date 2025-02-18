@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mdp_group_14"
+    namespace = "com.example.mdp_group_19"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.mdp_group_14"
+        applicationId = "com.example.mdp_group_19"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

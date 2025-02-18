@@ -23,7 +23,7 @@
 
                 <view
                     android:id="@+id/mapView"
-                    class="com.example.mdp_group_14.GridMap"
+                    class="com.example.mdp_group_19.GridMap"
                     android:layout_width="match_parent"
                     android:layout_height="430dp" />
 

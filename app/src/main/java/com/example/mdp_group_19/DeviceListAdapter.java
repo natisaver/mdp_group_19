@@ -1,4 +1,4 @@
-package com.example.mdp_group_14;
+package com.example.mdp_group_19;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
