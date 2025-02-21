@@ -383,24 +383,21 @@ public class Home extends Fragment {
 
                 Home.refreshMessageReceivedNS("TASK2"+"\n");
                 Home.refreshMessageReceivedNS("obstacle id: "+cmd[1]+", ARROW: "+cmd[2]);
-
-
-//                updateStatus(cmd[0]+" "+ cmd[1]+" "+cmd[2]);
             }
 
 
-            //NEW VER: Expects a syntax of eg. MOVE,<DISTANCE IN CM>,<DIRECTION>.
-            //NEW VER: Expects a syntax of eg. TURN,<DIRECTION>.
+            //Move: Expects a syntax of eg. MOVE,<DISTANCE IN CM>,<DIRECTION>.
+            //Turn: Expects a syntax of eg. TURN,<DIRECTION>.
 
-            //CASE 1 & 2: MoveInstruction or TurnInstruction sent
+            // CASE 1: MoveInstruction or TurnInstruction sent
             else if(message.contains("MOVE") || message.contains("TURN")){
                 updateStatus("translation");
                 pathTranslator.translatePath(message); //splitting and translation will be done in PathTranslator
             }
+            // CASE 2: Stop timer
             else if(message.contains("STOP"))
             {
                 Home.refreshMessageReceivedNS("STOP received");
-//                showLog("received Stop");
                 Home.stopTimerFlag = true;
                 Home.stopWk9TimerFlag=true;
                 timerHandler.removeCallbacks(ControlFragment.timerRunnableExplore);
