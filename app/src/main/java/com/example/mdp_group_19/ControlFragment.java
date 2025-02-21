@@ -124,6 +124,8 @@ public class ControlFragment extends Fragment {
                     }
 
                     Home.printMessage("{\"cat\":\"control\", \"value\":\"FW01\"}");
+//                    Home.printMessage("f");
+
                 }
                 else
                     updateStatus("Please press 'SET START POINT'");
