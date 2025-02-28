@@ -320,31 +320,22 @@ public class BluetoothSetUp extends Fragment {
 //            );
 //        }
 //    }
-    private void checkBTPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
-            int permissionScan = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.BLUETOOTH_SCAN);
-            int permissionConnect = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.BLUETOOTH_CONNECT);
-
-            if (permissionScan != PackageManager.PERMISSION_GRANTED || permissionConnect != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                        getActivity(),
-                        new String[]{
-                                Manifest.permission.BLUETOOTH_SCAN,
-                                Manifest.permission.BLUETOOTH_CONNECT
-                        },
-                        1
-                );
-            }
-        } else { // Android 11 and below
-            int permissionLocation = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
-
-            if (permissionLocation != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                        getActivity(),
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        1
-                );
-            }
+    private void checkBTPermissions(){
+        int permission1 = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int permission2 = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.BLUETOOTH_SCAN);
+        if (permission1 != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    getActivity(),
+                    PERMISSIONS_STORAGE,
+                    1
+            );
+        } else if (permission2 != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(
+                    getActivity(),
+                    PERMISSIONS_LOCATION,
+                    1
+            );
         }
     }
 
