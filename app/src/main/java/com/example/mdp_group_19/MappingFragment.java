@@ -1,5 +1,10 @@
 package com.example.mdp_group_19;
 
+import static com.example.mdp_group_19.GridMap.displayedImageBearings;
+import static com.example.mdp_group_19.GridMap.obstacleCoord;
+import java.util.List;
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -19,13 +24,19 @@ import android.widget.ToggleButton;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Arrays;
+
 public class MappingFragment extends Fragment {
     private static final String TAG = "MapFragment";
 
     SharedPreferences mapPref;
     private static SharedPreferences.Editor editor;
 
-    Button updateButton;
+    Button calculateAlgoButton;
     ImageButton resetMapBtn, saveMapObstacle, loadMapObstacle;
     ImageButton directionChangeImageBtn, obstacleImageBtn;
     ToggleButton setStartPointToggleBtn;
@@ -42,6 +53,42 @@ public class MappingFragment extends Fragment {
     static String path="LL";
     static boolean dragStatus;
     static boolean changeObstacleStatus;
+
+    // ALGO CALCULATION MESSAGE RELATED STUFF
+    // converts obstacle bearing to number to craft json for calculating algo
+    public int getDirectionValue(String direction) {
+        switch (direction) {
+            case "North":
+                return 0;
+            case "East":
+                return 2;
+            case "South":
+                return 4;
+            case "West":
+                return 6;
+            default:
+                throw new IllegalArgumentException("Invalid direction: " + direction);
+        }
+    }
+    public class Obstacle {
+        private int x;
+        private int y;
+        private int id;
+        private int d;
+
+        public Obstacle(int x, int y, int id, int d) {
+            this.x = x;
+            this.y = y;
+            this.id = id;
+            this.d = d;
+        }
+
+        // Getters
+        public int getX() { return x; }
+        public int getY() { return y; }
+        public int getId() { return id; }
+        public int getD() { return d; }
+    }
 
     String direction = "";
     @Override
@@ -73,6 +120,9 @@ public class MappingFragment extends Fragment {
         changeObstacleSwitch = root.findViewById(R.id.changeObstacleSwitch);
         // testing
         emergencyBtn = root.findViewById(R.id.eBtn);
+
+        // for sending the coordinates of all items on grid to calculate algo
+        calculateAlgoButton = root.findViewById(R.id.calculateBtn);
 
         // for hidden functionalities
         emergencyBtn.setOnClickListener(new View.OnClickListener() {
@@ -136,7 +186,7 @@ public class MappingFragment extends Fragment {
             public void onClick(View view) {
                 showLog("Clicked resetMapBtn");
                 showToast("Reseting map...");
-                Home.printMessage("CLEAR");
+//                Home.printMessage("CLEAR");
                 gridMap.resetMap();
 
             }
@@ -186,6 +236,79 @@ public class MappingFragment extends Fragment {
                     setStartPointToggleBtn.setBackgroundResource(R.drawable.border_black);
                     gridMap.setStartCoordStatus(false);
                 }
+            }
+        });
+
+        // button to send maze coord for task 1 to calculate algo
+        calculateAlgoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showLog("Clicked sendMazeToRPI");
+                // get robot start direction, "up", "down", "left", "right"
+//                0 - North/up
+//                2 - East/right
+//                4 - South/down
+//                6 - West/left
+                String robotDir = gridMap.getRobotDirection().toLowerCase();
+
+                // get robot coordinates
+                int[] robotCoord = gridMap.getStartCoord();
+
+                // Create the main JSON object, i.e. the message to send RPI
+//                {
+//                    "cat": "obstacles",
+//                        "value": {
+//                    "obstacles": [{"x": 5, "y": 10, "id": 1, "d": 2}],
+//                    "mode": "0"
+//                }
+//                }
+                JSONObject mainObject = new JSONObject();
+                try {
+                    mainObject.put("cat", "obstacles");
+
+                    // Create the value object
+                    JSONObject valueObject = new JSONObject();
+
+                    // Create the obstacles array
+                    JSONArray obstaclesArray = new JSONArray();
+
+                    // get all obstacle coordinates and direction, 0 indexed, and populate into obstacles list
+                    for (int i = 0; i < obstacleCoord.size(); i++) {
+                        int x = obstacleCoord.get(i)[0];
+                        int y = obstacleCoord.get(i)[1];
+                        String direction = displayedImageBearings.get(x)[y];
+                        int d = getDirectionValue(direction);
+                        // Create an obstacle object
+                        JSONObject obstacleObject = new JSONObject();
+                        obstacleObject.put("x", x);
+                        obstacleObject.put("y", y);
+                        obstacleObject.put("id", i);
+                        obstacleObject.put("d", d);
+                        // Add the obstacle object to the array
+                        obstaclesArray.put(obstacleObject);
+                    }
+                    // Add the obstacles array to the value object
+                    valueObject.put("obstacles", obstaclesArray);
+                    valueObject.put("mode", "0");
+
+                    // Add the value object to the main object message
+                    mainObject.put("value", valueObject);
+
+                    // Convert the main object to a JSON string
+                    String jsonString = mainObject.toString();
+                    // send to rpi via bluetooth
+                    Home.printMessage(jsonString);
+                    showToast("Success, sent the obstacles to RPI for algo");
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    showToast("Failed to send the obstacles to RPI for algo");
+                }
+
+
+
+
+
             }
         });
 
@@ -265,7 +388,7 @@ public class MappingFragment extends Fragment {
                             default:
                                 direction = "";
                         }
-                        gridMap.displayedImageBearings.get(Integer.parseInt(coords[1]))[Integer.parseInt(coords[0])] = direction;
+                        displayedImageBearings.get(Integer.parseInt(coords[1]))[Integer.parseInt(coords[0])] = direction;
                         gridMap.setObstacleCoord(Integer.parseInt(coords[0]) + 1, Integer.parseInt(coords[1]) + 1);
                         try {
                             Thread.sleep(50);

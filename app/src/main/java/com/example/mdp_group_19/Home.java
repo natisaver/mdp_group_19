@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.Charset;
@@ -256,7 +257,7 @@ public class Home extends Fragment {
         dir= (newDir.equals("up"))?"NORTH":(newDir.equals("down"))?"SOUTH":(newDir.equals("left"))?"WEST":"EAST";
         if ((x>=0 && y>=0 && x<=19 && y <= 19))
         {
-            Home.printMessage("ROBOT" + "," + (x)* getGridMap().CELL_UNIT_SIZE_CM + getGridMap().CELL_UNIT_SIZE_CM/2 + "," + (y)* getGridMap().CELL_UNIT_SIZE_CM + getGridMap().CELL_UNIT_SIZE_CM/2 + "," + dir.toUpperCase());
+//            Home.printMessage("ROBOT" + "," + (x)* getGridMap().CELL_UNIT_SIZE_CM + getGridMap().CELL_UNIT_SIZE_CM/2 + "," + (y)* getGridMap().CELL_UNIT_SIZE_CM + getGridMap().CELL_UNIT_SIZE_CM/2 + "," + dir.toUpperCase());
         }
         else{
             showLog("out of grid");
@@ -322,87 +323,155 @@ public class Home extends Fragment {
 
             // for amd tool testing
             // {"status":"reversing"}
-            if (message.contains("status")) {
+//            if (message.contains("status")) {
+//                try {
+//                    JSONObject jsonObject = new JSONObject(message);
+//                    String status = jsonObject.getString("status");
+//                    robotStatusTextView.setText(status);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+            // robot running aft android sends start
+            //RPI receive ACK from stm board
+            //RPI -> Android {"cat":"status","value":"running")
+            if (message.contains("running")) {
+                robotStatusTextView.setText("running");
+            }
+            // robot ready after algo calculation is completed
+            // {"cat":"info","value":"Commands and path received Algo API. Robot is ready to move." }
+            else if (message.contains("ready")) {
+                robotStatusTextView.setText("ready");
+            }
+            // robot received updated location
+            // {"cat": "location", "value" : {"x" : x, "y" : y, "d" : d}}
+            if (message.contains("location")) {
                 try {
                     JSONObject jsonObject = new JSONObject(message);
-                    String status = jsonObject.getString("status");
-                    robotStatusTextView.setText(status);
+                    JSONObject valueObject = jsonObject.getJSONObject("value");
+                    int x = valueObject.getInt("x");
+                    int y = valueObject.getInt("y");
+                    int d = valueObject.getInt("d");
+
+                    String direction;
+                    switch (d) {
+                        case 0:
+                            direction = "up";
+                            break;
+                        case 2:
+                            direction = "right";
+                            break;
+                        case 4:
+                            direction = "down";
+                            break;
+                        case 6:
+                            direction = "left";
+                            break;
+                        default:
+                            direction = "";
+                            break;
+                    }
+
+                    int colNum = x + 1;
+                    int rowNum = y + 1;
+
+                    gridMap.setCurCoord(colNum, rowNum, direction);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            //STATUS:<input>
-            if (message.contains("STATUS")) {
-                robotStatusTextView.setText(message.split(":")[1]);
-            }
-            //ROBOT|5,4,EAST
-            if(message.contains("ROBOT")) {
-                String[] cmd = message.split("\\|");
-                String[] sentCoords = cmd[1].split(",");
-                String[] sentDirection = sentCoords[2].split("\\.");
-//                BluetoothCommunications.getMessageReceivedTextView().append("\n");
-                String direction = "";
-                String abc = String.join("", sentDirection);
-                if (abc.contains("EAST")) {
-                    direction = "right";
-                }
-                else if (abc.contains("NORTH")) {
-                    direction = "up";
-                }
-                else if (abc.contains("WEST")) {
-                    direction = "left";
-                }
-                else if (abc.contains("SOUTH")) {
-                    direction = "down";
-                }
-                else{
-                    direction = "";
-                }
-                int colNum = Integer.parseInt(sentCoords[0]) + 1;
-                int rowNum = Integer.parseInt(sentCoords[1]) + 1;
-
-                gridMap.setCurCoord(colNum, rowNum, direction);
-            }
-            //image format from RPI is "TARGET,<obstacleID>,<ImageNumber>" eg TARGET,3,7
-            else if(message.contains("TARGET")) {
+            // detected obstacle id
+            // {"cat": "image-rec", "value": {"image_id": image_id, "obstacle_id": obstacle_id}
+            else if (message.contains("image-rec"))
+            {
                 try {
-                    String[] cmd = message.split(",");
-                    BluetoothCommunications.getMessageReceivedTextView().append("Obstacle no: " + cmd[1]+ "TARGET ID: " + cmd[2] + "\n");
-                    gridMap.updateIDFromRpi(String.valueOf(Integer.valueOf(cmd[1])-1), cmd[2]);
-                    obstacleID = String.valueOf(Integer.valueOf(cmd[1]) - 2);
+                    JSONObject jsonObject = new JSONObject(message);
+                    JSONObject valueObject = jsonObject.getJSONObject("value");
+                    Integer obstacleID = valueObject.getInt("image_id");
+                    String targetID = valueObject.getString("obstacle_id");
+                    int d = valueObject.getInt("d");
 
+                    BluetoothCommunications.getMessageReceivedTextView().append("Obstacle no: " + obstacleID + "TARGET ID: " + targetID + "\n");
+                    gridMap.updateIDFromRpi(String.valueOf(obstacleID-1), targetID);
                 }
-                catch(Exception e)
-                {
+                catch(JSONException e) {
                     e.printStackTrace();
                 }
             }
-            else if(message.contains("ARROW")){
-                String[] cmd = message.split(",");
-//                BluetoothCommunications.getMessageReceivedTextView().append("Obstacle no: " + cmd[1]+ "TARGET ID: " + cmd[2] + "\n");
 
-                Home.refreshMessageReceivedNS("TASK2"+"\n");
-                Home.refreshMessageReceivedNS("obstacle id: "+cmd[1]+", ARROW: "+cmd[2]);
-            }
-
-
-            //Move: Expects a syntax of eg. MOVE,<DISTANCE IN CM>,<DIRECTION>.
-            //Turn: Expects a syntax of eg. TURN,<DIRECTION>.
-
-            // CASE 1: MoveInstruction or TurnInstruction sent
-            else if(message.contains("MOVE") || message.contains("TURN")){
-                updateStatus("translation");
-                pathTranslator.translatePath(message); //splitting and translation will be done in PathTranslator
-            }
-            // CASE 2: Stop timer
-            else if(message.contains("STOP"))
+            // Stop timer for either week 8 or 9 tasks
+            else if(message.contains("finished"))
             {
                 Home.refreshMessageReceivedNS("STOP received");
+                robotStatusTextView.setText("finished");
                 Home.stopTimerFlag = true;
                 Home.stopWk9TimerFlag=true;
                 timerHandler.removeCallbacks(ControlFragment.timerRunnableExplore);
                 timerHandler.removeCallbacks(ControlFragment.timerRunnableFastest);
             }
+            //STATUS:<input>
+//            if (message.contains("STATUS")) {
+//                robotStatusTextView.setText(message.split(":")[1]);
+//            }
+            //ROBOT|5,4,EAST
+//            if(message.contains("ROBOT")) {
+//                String[] cmd = message.split("\\|");
+//                String[] sentCoords = cmd[1].split(",");
+//                String[] sentDirection = sentCoords[2].split("\\.");
+////                BluetoothCommunications.getMessageReceivedTextView().append("\n");
+//                String direction = "";
+//                String abc = String.join("", sentDirection);
+//                if (abc.contains("EAST")) {
+//                    direction = "right";
+//                }
+//                else if (abc.contains("NORTH")) {
+//                    direction = "up";
+//                }
+//                else if (abc.contains("WEST")) {
+//                    direction = "left";
+//                }
+//                else if (abc.contains("SOUTH")) {
+//                    direction = "down";
+//                }
+//                else{
+//                    direction = "";
+//                }
+//                int colNum = Integer.parseInt(sentCoords[0]) + 1;
+//                int rowNum = Integer.parseInt(sentCoords[1]) + 1;
+//
+//                gridMap.setCurCoord(colNum, rowNum, direction);
+//            }
+            //image format from RPI is "TARGET,<obstacleID>,<ImageNumber>" eg TARGET,3,7
+//            else if(message.contains("TARGET")) {
+//                try {
+//                    String[] cmd = message.split(",");
+//                    BluetoothCommunications.getMessageReceivedTextView().append("Obstacle no: " + cmd[1]+ "TARGET ID: " + cmd[2] + "\n");
+//                    gridMap.updateIDFromRpi(String.valueOf(Integer.valueOf(cmd[1])-1), cmd[2]);
+//                    obstacleID = String.valueOf(Integer.valueOf(cmd[1]) - 2);
+//
+//                }
+//                catch(Exception e)
+//                {
+//                    e.printStackTrace();
+//                }
+//            }
+//            else if(message.contains("ARROW")){
+//                String[] cmd = message.split(",");
+////                BluetoothCommunications.getMessageReceivedTextView().append("Obstacle no: " + cmd[1]+ "TARGET ID: " + cmd[2] + "\n");
+//
+//                Home.refreshMessageReceivedNS("TASK2"+"\n");
+//                Home.refreshMessageReceivedNS("obstacle id: "+cmd[1]+", ARROW: "+cmd[2]);
+//            }
+
+
+            //Move: Expects a syntax of eg. MOVE,<DISTANCE IN CM>,<DIRECTION>.
+            //Turn: Expects a syntax of eg. TURN,<DIRECTION>.
+
+//            // CASE 1: MoveInstruction or TurnInstruction sent
+//            else if(message.contains("MOVE") || message.contains("TURN")){
+//                updateStatus("translation");
+//                pathTranslator.translatePath(message); //splitting and translation will be done in PathTranslator
+//            }
             else{
 //                BluetoothCommunications.getMessageReceivedTextView().append("unknown message received: ");
                 showLog("message received but without keywords");

@@ -91,7 +91,7 @@ public class PathTranslator {
                         showLog("Unable to move forward");
                     }
 
-                    Home.printMessage("FW01");
+//                    Home.printMessage("FW01");
 
                     try {
                         Thread.sleep(MILLI_DELAY);

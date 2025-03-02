@@ -132,7 +132,7 @@ public class GridMap extends View {
     private static int[] curCoord = new int[]{-1, -1};
     private static int[] oldCoord = new int[]{-1, -1};
     // obstacleCoord stores a list of all the different obstacles' coordinates
-    private static ArrayList<int[]> obstacleCoord = new ArrayList<>();
+    public static ArrayList<int[]> obstacleCoord = new ArrayList<>();
 
     // controls whether or not the robot is to be re-drawn upon calling onDraw() after an invalidate()
     // SHOULD be 'true' upon selecting a start position using SET START POINT btn, and back to false if robot goes out of bounds
@@ -635,7 +635,7 @@ public class GridMap extends View {
                 startCoord[1] = yCoord;
             }
             // send bluetooth msg
-            Home.printMessage("ROBOT" + "," + xCoord * CELL_UNIT_SIZE_CM + CELL_UNIT_SIZE_CM/2 + "," + yCoord * CELL_UNIT_SIZE_CM + CELL_UNIT_SIZE_CM/2 + "," + dir.toUpperCase());
+//            Home.printMessage("ROBOT" + "," + xCoord * CELL_UNIT_SIZE_CM + CELL_UNIT_SIZE_CM/2 + "," + yCoord * CELL_UNIT_SIZE_CM + CELL_UNIT_SIZE_CM/2 + "," + dir.toUpperCase());
         } else {
             showToast("Robot Out of Grid");
             resetRobotCoordinate();
@@ -644,7 +644,7 @@ public class GridMap extends View {
         showLog("Exiting setStartCoord");
     }
 
-    private int[] getStartCoord() {
+    public int[] getStartCoord() {
         return startCoord;
     }
 
@@ -805,10 +805,7 @@ public class GridMap extends View {
 
         if (((col - 1)) >= 0 && row >= 0) {
 
-            Home.printMessage("OBSTACLE" + "," + obstacleNumber + "," + (col - 1) * 10 + "," + (19 - row) * 10 + "," + (displayedImageBearings.get(19 - row)[col - 1]).toUpperCase() + "\n");
-//            BluetoothCommunications.getMessageReceivedTextView().append(Integer.toString((col - 1))+"\n");
-//            BluetoothCommunications.getMessageReceivedTextView().append(Integer.toString((19 - row))+"\n");
-//            BluetoothCommunications.getMessageReceivedTextView().append((imageBearings.get(19 - row)[col - 1]).toUpperCase()+"\n");
+//            Home.printMessage("OBSTACLE" + "," + obstacleNumber + "," + (col - 1) * 10 + "," + (19 - row) * 10 + "," + (displayedImageBearings.get(19 - row)[col - 1]).toUpperCase() + "\n");
         } else {
             showLog("out of grid");
         }
@@ -866,7 +863,7 @@ public class GridMap extends View {
 
             //updateStatus( obstacleNumber + "," + (initialColumn) + "," + (initialRow) + ", Bearing: " + "-1");
             if (((initialColumn - 1)) >= 0 && ((initialRow - 1)) >= 0) {
-                Home.printMessage("OBSTACLE" + "," + (obstacleid3 + 1) + "," + (initialColumn) * 10 + "," + (initialRow) * 10 + "," + "-1");
+//                Home.printMessage("OBSTACLE" + "," + (obstacleid3 + 1) + "," + (initialColumn) * 10 + "," + (initialRow) * 10 + "," + "-1");
             } else {
                 showLog("out of grid");
             }
@@ -1102,7 +1099,7 @@ public class GridMap extends View {
                             }
                             if (((tCol - 1)) >= 0 && ((tRow - 1)) >= 0) {
                                 showLog("obstacle num, horizontally(cm), vertically(cm), set to new direction at:");
-                                Home.printMessage("OBSTACLE" + "," + (obstacleid + 1) + "," + (tCol - 1) * 10 + "," + (tRow - 1) * 10 + "," + newBearing.toUpperCase());
+//                                Home.printMessage("OBSTACLE" + "," + (obstacleid + 1) + "," + (tCol - 1) * 10 + "," + (tRow - 1) * 10 + "," + newBearing.toUpperCase());
                             } else {
                                 showLog("out of grid");
                             }

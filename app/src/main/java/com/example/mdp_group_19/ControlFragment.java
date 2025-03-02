@@ -11,6 +11,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +34,8 @@ public class ControlFragment extends Fragment {
     public static ToggleButton exploreButton, fastestButton;
     public static TextView exploreTimeTextView, fastestTimeTextView, robotStatusTextView;
     private static GridMap gridMap;
+    public static Button calculateAlgoButton;
+
 
     // Timer
     public static Handler timerHandler = new Handler();
@@ -119,7 +122,7 @@ public class ControlFragment extends Fragment {
                     if (gridMap.getValidPosition()){
                         updateStatus("moving forward");}
                     else {
-                        Home.printMessage("obstacle");
+//                        Home.printMessage("obstacle");
                         updateStatus("Unable to move forward");
                     }
 
@@ -235,11 +238,12 @@ public class ControlFragment extends Fragment {
                 }
                 else if (exploreToggleBtn.getText().equals("STOP")) {
                     // Get String value that represents obstacle configuration
-                    String msg = gridMap.getObstacles();
+//                    String msg = gridMap.getObstacles();
                     // Send this String over via BT
                     //Home.printCoords(msg);
                     //Send BEGIN to the robot
-                    Home.printMessage("BEGIN"); //send a string "BEGIN" to the RPI
+                    // Home.printMessage("BEGIN"); //send a string "BEGIN" to the RPI
+                    Home.printMessage("{\"cat\": \"control\", \"value\": \"start\"}\n");
                     // Start timer
                     Home.stopTimerFlag = false;
                     showToast("Task 1 timer start!");
@@ -269,7 +273,8 @@ public class ControlFragment extends Fragment {
                 }
                 else if (fastestToggleBtn.getText().equals("STOP")) {
                     showToast("Task 2 timer start!");
-                    Home.printMessage("BEGIN"); //send a string "BEGIN" to the RPI
+//                    Home.printMessage("BEGIN"); //send a string "BEGIN" to the RPI
+                    Home.printMessage("{\"cat\": \"control\", \"value\": \"start\"}\n");
                     Home.stopWk9TimerFlag = false;
                     robotStatusTextView.setText("Task 2 Started");
                     fastestTimer = System.currentTimeMillis();

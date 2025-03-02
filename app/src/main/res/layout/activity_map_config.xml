@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/calculateBtn"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <LinearLayout
@@ -37,8 +37,8 @@
 
                 <LinearLayout
                     android:layout_width="140dp"
-                    android:layout_marginStart="10dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
                     android:orientation="horizontal">
 
 
@@ -67,8 +67,8 @@
 
                 <LinearLayout
                     android:layout_width="140dp"
-                    android:layout_marginStart="10dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
                     android:orientation="horizontal">>
 
                     <ImageButton
@@ -76,32 +76,27 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:layout_marginTop="15dp"
-                        android:scaleType="centerCrop"
                         android:background="@drawable/save_btn"
-                        />
+                        android:scaleType="centerCrop" />
 
                     <ImageButton
                         android:id="@+id/loadBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:layout_marginTop="15dp"
                         android:layout_marginLeft="8dp"
-                        android:scaleType="centerCrop"
+                        android:layout_marginTop="15dp"
                         android:background="@drawable/load_btn"
-                        />
+                        android:scaleType="centerCrop" />
 
                     <ImageButton
                         android:id="@+id/resetBtn"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
-                        android:layout_marginTop="15dp"
                         android:layout_marginLeft="8dp"
-                        android:scaleType="centerCrop"
+                        android:layout_marginTop="15dp"
                         android:background="@drawable/reset_btn"
-                        />
+                        android:scaleType="centerCrop" />
                 </LinearLayout>
-
-
 
 
                 <!--                android:drawableLeft="@mipmap/two_head_dragon"-->
@@ -118,22 +113,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:orientation="vertical"
-                android:background="@drawable/border_black">
+                android:background="@drawable/border_black"
+                android:orientation="vertical">
 
 
                 <LinearLayout
                     android:layout_width="180dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp">
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView_changeObstacle"
                         android:layout_width="115dp"
                         android:layout_height="24dp"
-                        android:textColor="@color/colorBlack"
-                        android:text="Change Obstacle: " />
+                        android:text="Change Obstacle: "
+                        android:textColor="@color/colorBlack" />
 
                     <Switch
                         android:id="@+id/changeObstacleSwitch"
@@ -142,19 +138,21 @@
                         android:layout_marginStart="15dp" />
 
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="180dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp">
+                    android:layout_marginBottom="10dp"
+                    android:orientation="horizontal">
+
                     <TextView
                         android:id="@+id/textView_drag"
                         android:layout_width="34dp"
-                        android:textColor="@color/colorBlack"
                         android:layout_height="wrap_content"
-                        android:text="Drag: " />
+                        android:text="Drag: "
+                        android:textColor="@color/colorBlack" />
 
                     <Switch
                         android:id="@+id/dragSwitch"
@@ -164,24 +162,34 @@
 
                 </LinearLayout>
             </LinearLayout>
-<!--            "Preload Defaults"-->
-<!--            <Button-->
-<!--                android:id="@+id/updateMapBtn"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginTop="13dp"-->
-<!--                android:paddingEnd="10dp"-->
-<!--                android:text="DO NOT CLICK"-->
-<!--                android:background="@drawable/border_black_state"-->
-<!--                app:backgroundTint="@color/colorYellow"/>-->
+            <!--            "Preload Defaults"-->
+            <!--            <Button-->
+            <!--                android:id="@+id/updateMapBtn"-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_marginTop="13dp"-->
+            <!--                android:paddingEnd="10dp"-->
+            <!--                android:text="DO NOT CLICK"-->
+            <!--                android:background="@drawable/border_black_state"-->
+            <!--                app:backgroundTint="@color/colorYellow"/>-->
 
             <ImageView
                 android:id="@+id/eBtn"
-                android:layout_gravity="center"
                 android:layout_width="0dp"
                 android:layout_height="00dp"
+                android:layout_gravity="center"
                 android:layout_marginTop="20dp"
-                android:src="@drawable/snor_0"/>
+                android:src="@drawable/snor_0" />
+
+            <Button
+                android:id="@+id/calculateBtn"
+                style="@android:style/Widget.Material.Light.Button"
+                android:layout_width="179dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/border_black"
+                android:paddingStart="5dp"
+                android:text="Calculate Algo Path" />
 
         </LinearLayout>
     </LinearLayout>
