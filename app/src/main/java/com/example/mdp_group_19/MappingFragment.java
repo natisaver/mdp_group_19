@@ -270,14 +270,14 @@ public class MappingFragment extends Fragment {
 
                     // get all obstacle coordinates and direction, 0 indexed, and populate into obstacles list
                     for (int i = 0; i < obstacleCoord.size(); i++) {
-                        int x = obstacleCoord.get(i)[0];
-                        int y = obstacleCoord.get(i)[1];
-                        String direction = displayedImageBearings.get(x)[y];
+                        int col = obstacleCoord.get(i)[0];
+                        int row = obstacleCoord.get(i)[1];
+                        String direction = displayedImageBearings.get(row)[col];
                         int d = getDirectionValue(direction);
                         // Create an obstacle object
                         JSONObject obstacleObject = new JSONObject();
-                        obstacleObject.put("x", x);
-                        obstacleObject.put("y", y);
+                        obstacleObject.put("x", col);
+                        obstacleObject.put("y", row);
                         obstacleObject.put("id", i);
                         obstacleObject.put("d", d);
                         // Add the obstacle object to the array
