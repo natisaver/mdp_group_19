@@ -380,7 +380,7 @@ public class Home extends Fragment {
                     e.printStackTrace();
                 }
             }
-            // detected obstacle id
+            // detected obstacle id, obstacle ids start from 1
             // {"cat": "image-rec", "value": {"image_id": image_id, "obstacle_id": obstacle_id}}
             // {"cat": "image-rec", "value": {"image_id": "A", "obstacle_id":  "1"}}
             else if (message.contains("image-rec"))

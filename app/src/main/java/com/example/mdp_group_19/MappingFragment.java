@@ -235,6 +235,7 @@ public class MappingFragment extends Fragment {
             }
         });
 
+        // send calculate algo message
         // button to send maze coord for task 1 to calculate algo
         calculateAlgoButton.setOnClickListener(new View.OnClickListener() {
             @Override
