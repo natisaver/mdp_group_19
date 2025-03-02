@@ -382,17 +382,18 @@ public class Home extends Fragment {
             }
             // detected obstacle id
             // {"cat": "image-rec", "value": {"image_id": image_id, "obstacle_id": obstacle_id}
+            // {"cat": "image-rec", "value": {"image_id": "A", "obstacle_id":  "1"}}
             else if (message.contains("image-rec"))
             {
                 try {
                     JSONObject jsonObject = new JSONObject(message);
                     JSONObject valueObject = jsonObject.getJSONObject("value");
-                    Integer obstacleID = valueObject.getInt("image_id");
+                    String obstacleID = valueObject.getString("image_id");
                     String targetID = valueObject.getString("obstacle_id");
                     int d = valueObject.getInt("d");
 
                     BluetoothCommunications.getMessageReceivedTextView().append("Obstacle no: " + obstacleID + "TARGET ID: " + targetID + "\n");
-                    gridMap.updateIDFromRpi(String.valueOf(obstacleID-1), targetID);
+                    gridMap.updateIDFromRpi(String.valueOf(Integer.parseInt(obstacleID)-1), targetID);
                 }
                 catch(JSONException e) {
                     e.printStackTrace();
