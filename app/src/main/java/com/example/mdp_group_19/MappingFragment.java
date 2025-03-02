@@ -2,8 +2,6 @@ package com.example.mdp_group_19;
 
 import static com.example.mdp_group_19.GridMap.displayedImageBearings;
 import static com.example.mdp_group_19.GridMap.obstacleCoord;
-import java.util.List;
-import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -27,8 +25,6 @@ import androidx.fragment.app.Fragment;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Arrays;
 
 public class MappingFragment extends Fragment {
     private static final String TAG = "MapFragment";
@@ -122,7 +118,7 @@ public class MappingFragment extends Fragment {
         emergencyBtn = root.findViewById(R.id.eBtn);
 
         // for sending the coordinates of all items on grid to calculate algo
-        calculateAlgoButton = root.findViewById(R.id.calculateBtn);
+        calculateAlgoButton = root.findViewById(R.id.calculateAlgoBtn);
 
         // for hidden functionalities
         emergencyBtn.setOnClickListener(new View.OnClickListener() {
