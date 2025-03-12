@@ -383,7 +383,7 @@ public class Home extends Fragment {
             // detected obstacle id, obstacle ids start from 1
             // {"cat": "image-rec", "value": {"image_id": image_id, "obstacle_id": obstacle_id}}
             // {"cat": "image-rec", "value": {"image_id": "A", "obstacle_id":  "1"}}
-            else if (message.contains("image-rec"))
+            if (message.contains("image-rec"))
             {
                 try {
                     JSONObject jsonObject = new JSONObject(message);
@@ -400,7 +400,7 @@ public class Home extends Fragment {
             }
 
             // Stop timer for either week 8 or 9 tasks
-            else if(message.contains("finished"))
+            if (message.contains("finished"))
             {
                 Home.refreshMessageReceivedNS("STOP received");
                 robotStatusTextView.setText("finished");
@@ -472,10 +472,10 @@ public class Home extends Fragment {
 //                updateStatus("translation");
 //                pathTranslator.translatePath(message); //splitting and translation will be done in PathTranslator
 //            }
-            else{
-//                BluetoothCommunications.getMessageReceivedTextView().append("unknown message received: ");
-                showLog("message received but without keywords");
-            }
+//            else{
+////                BluetoothCommunications.getMessageReceivedTextView().append("unknown message received: ");
+//                showLog("message received but without keywords");
+//            }
         }
     };
 
