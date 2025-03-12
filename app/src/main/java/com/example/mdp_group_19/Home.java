@@ -392,7 +392,7 @@ public class Home extends Fragment {
                     String imageID = valueObject.getString("image_id");
 
                     BluetoothCommunications.getMessageReceivedTextView().append("Obstacle no: " + obstacleID + "TARGET found: " + imageID + "\n");
-                    gridMap.updateIDFromRpi(String.valueOf(Integer.parseInt(obstacleID)-1), imageID);
+                    gridMap.updateIDFromRpi(String.valueOf(Integer.parseInt(obstacleID)), imageID);
                 }
                 catch(JSONException e) {
                     e.printStackTrace();

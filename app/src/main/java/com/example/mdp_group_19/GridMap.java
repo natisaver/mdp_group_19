@@ -1664,6 +1664,7 @@ public class GridMap extends View {
     }
 
     // Updating the obstacle image id (sent over by RPi)
+    // obstacleID starts from 0
     public boolean updateIDFromRpi(String obstacleID, String imageID) {
         showLog("updateIDFromRpi");
         int x = obstacleCoord.get(Integer.parseInt(obstacleID))[0];
